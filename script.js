@@ -1747,6 +1747,8 @@ class ImageGridSplitter {
         
         cell.style.backgroundColor = color;
         cell.style.backgroundImage = 'none';
+        // Prevent sub-pixel gaps between cells when parent is CSS-scaled
+        cell.style.boxShadow = `0 0 0 0.5px ${color}`;
         
         // Apply border radius (pill shape: capped at half the shorter side)
         if (this.cellBorderRadius > 0 && this.image) {
@@ -1975,6 +1977,8 @@ class ImageGridSplitter {
                 : 'rgb(128, 128, 128)';
             cell.style.backgroundColor = color;
             cell.style.backgroundImage = 'none';
+            // Prevent sub-pixel gaps between cells when parent is CSS-scaled
+            cell.style.boxShadow = `0 0 0 0.5px ${color}`;
         } else {
             // Image mode: use cached cell image (avoids redundant canvas operations)
             const dataURL = this.getCachedCellImage(row, col, this.gridSize, this.image);
@@ -2054,6 +2058,8 @@ class ImageGridSplitter {
                 : cellData.color || 'rgb(128, 128, 128)';
             cell.style.backgroundColor = color;
             cell.style.backgroundImage = 'none';
+            // Prevent sub-pixel gaps between cells when parent is CSS-scaled
+            cell.style.boxShadow = `0 0 0 0.5px ${color}`;
         } else {
             // Image mode: use cached cell image
             const cols = cellData.imageCols;
