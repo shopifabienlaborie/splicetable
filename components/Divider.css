@@ -1,0 +1,44 @@
+/**
+ * Divider Component Styles
+ * Mapped from Figma Design System to CSS Variables
+ */
+
+.divider-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  position: relative;
+}
+
+/* Spacing variants */
+.divider-spacing-sm {
+  padding: var(--spacing-100) 0;
+}
+
+.divider-spacing-md {
+  padding: var(--spacing-200) 0;
+}
+
+.divider-spacing-lg {
+  padding: var(--spacing-300) 0;
+}
+
+/* The divider line itself */
+.divider-line {
+  position: relative;
+  flex: 1;
+  height: 1px;
+  min-height: 1px;
+  min-width: 0;
+  
+  /* Surface below background from Figma */
+  background: var(--surface-below);
+  
+  /* Bevel and inner shadows from Figma - "Surface below new" effect */
+  box-shadow: 
+    0px 1px 0px 0px var(--outer-bottom-light),
+    inset 1px 0px 1px 0px var(--inner-side-shadow),
+    inset -1px 0px 0px 0px var(--inner-side-shadow),
+    inset 0px 1px 1px 0px var(--inner-shadow);
+}

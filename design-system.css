@@ -1,0 +1,320 @@
+/* Design System Page Styles */
+
+.design-system-body {
+    display: block;
+    background: var(--surface-below);
+    overflow-y: auto;
+    overflow-x: hidden;
+    height: 100vh;
+}
+
+/* Old ds-nav styles removed - now using Navbar component */
+
+/* Layout: Sidebar + Content */
+.ds-layout {
+    display: flex;
+    min-height: calc(100vh - 54px);
+}
+
+/* Sidebar Navigation */
+.ds-sidebar {
+    width: 224px;
+    min-width: 224px;
+    position: sticky;
+    top: 54px;
+    height: calc(100vh - 54px);
+    overflow-y: auto;
+    background: var(--surface-above);
+    border-right: 1px solid var(--border-default);
+    z-index: 50;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-default) transparent;
+}
+
+.ds-sidebar::-webkit-scrollbar {
+    width: 4px;
+}
+
+.ds-sidebar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.ds-sidebar::-webkit-scrollbar-thumb {
+    background: var(--border-default);
+    border-radius: 4px;
+}
+
+.ds-sidebar-inner {
+    padding: 16px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.ds-sidebar-group {
+    display: flex;
+    flex-direction: column;
+    padding: 0 0 8px 0;
+    margin-bottom: 4px;
+}
+
+.ds-sidebar-group:not(:last-child) {
+    border-bottom: 1px solid var(--border-default);
+}
+
+.ds-sidebar-heading {
+    display: block;
+    padding: 8px 16px;
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--content-secondary);
+    text-decoration: none;
+    transition: color 0.15s ease;
+    cursor: pointer;
+}
+
+.ds-sidebar-heading:hover {
+    color: var(--content-primary);
+}
+
+.ds-sidebar-heading.active {
+    color: var(--content-primary);
+}
+
+.ds-sidebar-link {
+    display: block;
+    padding: 6px 16px 6px 24px;
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--content-secondary);
+    text-decoration: none;
+    transition: all 0.15s ease;
+    border-left: 2px solid transparent;
+    cursor: pointer;
+}
+
+.ds-sidebar-link:hover {
+    color: var(--content-primary);
+    background: var(--surface-ground);
+}
+
+.ds-sidebar-link.active {
+    color: var(--content-primary);
+    font-weight: 500;
+    border-left-color: var(--content-primary);
+    background: var(--surface-ground);
+}
+
+/* Main Content Container */
+.ds-container {
+    flex: 1;
+    min-width: 0;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px;
+}
+
+.ds-section {
+    background: var(--surface-above);
+    border: 1px solid var(--border-default);
+    border-radius: 8px;
+    padding: 40px;
+    margin-bottom: 40px;
+}
+
+.ds-section-title {
+    font-size: 28px;
+    font-weight: 500;
+    color: var(--content-primary);
+    margin: 0 0 32px 0;
+    padding-bottom: 16px;
+    border-bottom: 2px solid var(--surface-ground);
+}
+
+.ds-subsection {
+    margin-bottom: 40px;
+}
+
+.ds-subsection:last-child {
+    margin-bottom: 0;
+}
+
+.ds-subsection-title {
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--content-primary);
+    margin: 0 0 20px 0;
+}
+
+.component-variant-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--content-primary);
+    margin: 0 0 12px 0;
+    opacity: 0.7;
+}
+
+/* Token Grid */
+.token-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 16px;
+}
+
+.token-card {
+    background: var(--surface-ground);
+    border: 1px solid var(--border-default);
+    border-radius: 4px;
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.color-swatch {
+    width: 48px;
+    height: 48px;
+    border-radius: 4px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    flex-shrink: 0;
+}
+
+.spacing-demo {
+    height: 24px;
+    background: var(--content-primary);
+    border-radius: 2px;
+    flex-shrink: 0;
+}
+
+.shadow-demo {
+    width: 48px;
+    height: 48px;
+    background: var(--surface-ground);
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+
+.radius-demo {
+    width: 48px;
+    height: 48px;
+    background: var(--content-primary);
+    flex-shrink: 0;
+}
+
+.token-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+    min-width: 0;
+}
+
+.token-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--content-primary);
+}
+
+.token-value {
+    font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+    font-size: 12px;
+    color: var(--content-secondary);
+    background: var(--surface-above);
+    padding: 4px 8px;
+    border-radius: 3px;
+    border: 1px solid var(--border-default);
+    word-break: break-all;
+}
+
+/* Component Demos */
+.component-demo {
+    background: var(--surface-ground);
+    border: 1px solid var(--border-default);
+    border-radius: 4px;
+    padding: 24px;
+    margin-bottom: 16px;
+}
+
+.component-demo:last-child {
+    margin-bottom: 0;
+}
+
+/* Override some app styles for display */
+.component-demo .slider-container input[type="range"] {
+    width: 100%;
+}
+
+.component-demo .action-btn.full-width,
+.component-demo .upload-btn-center,
+.component-demo .replace-btn {
+    max-width: 300px;
+}
+
+.component-demo .segmented-control,
+.component-demo .image-fit-control,
+.component-demo .shape-selector {
+    max-width: 400px;
+}
+
+/* Icon Grid */
+.icon-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 20px;
+}
+
+.icon-demo {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 16px;
+    background: var(--surface-ground);
+    border: 1px solid var(--border-default);
+    border-radius: 4px;
+}
+
+.icon-demo .icon {
+    width: 32px;
+    height: 32px;
+    color: var(--content-primary);
+}
+
+.icon-label {
+    font-size: 12px;
+    color: var(--content-secondary);
+    text-align: center;
+}
+
+/* Usage Text */
+.usage-text {
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--content-secondary);
+    margin: 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .ds-sidebar {
+        display: none;
+    }
+
+    .ds-container {
+        padding: 20px;
+    }
+
+    .ds-section {
+        padding: 24px;
+    }
+
+    .token-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .icon-grid {
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    }
+}

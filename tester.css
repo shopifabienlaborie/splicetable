@@ -1,0 +1,316 @@
+/**
+ * Tester Page Styles
+ * Layout + Custom Slider component
+ */
+
+/* ═══════════════════════════════════════════════
+   Page layout
+   ═══════════════════════════════════════════════ */
+
+.tester-page {
+    width: 100%;
+    min-height: 100vh;
+    background: var(--surface-ground);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-500);
+}
+
+.tester-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    align-items: center;
+    width: 600px;
+}
+
+/* ─── Top bar: title + theme toggle ─── */
+.tester-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.tester-title {
+    font-family: 'Alpha Lyrae', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 16px;
+    color: var(--content-primary);
+    text-shadow: 0px 1px 0px var(--outer-bottom-light);
+    letter-spacing: 0.5px;
+}
+
+/* ─── Two-column panel ─── */
+.tester-panel {
+    display: flex;
+    gap: 57px;
+    align-items: flex-start;
+}
+
+.tester-col-left {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: 261px;
+}
+
+.tester-col-right {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    align-items: center;
+    justify-content: center;
+    width: 260px;
+    /* Match left column height */
+    height: 221px;
+}
+
+/* ─── Knob rows ─── */
+.tester-knob-row {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    width: 100%;
+}
+
+.tester-knob-row-bottom {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    justify-content: center;
+    width: 100%;
+    position: relative;
+}
+
+/* Lock button: positioned between width/height knobs */
+.tester-lock-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-300);
+    padding-top: 0px;
+    align-self: flex-start;
+}
+
+.tester-lock-group .button-component {
+    display: inline-flex;
+}
+
+.tester-lock-group .button-inner {
+    padding: var(--spacing-150) var(--spacing-150);
+}
+
+.tester-lock-group .button-label {
+    display: none;
+}
+
+.tester-lock-group .button-icon {
+    margin: 0;
+}
+
+.tester-lock-dot {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--surface-below);
+    transition: background 150ms cubic-bezier(0.25, 1, 0.45, 1);
+}
+
+.tester-lock-dot.engaged {
+    background: var(--accent);
+}
+
+/* ─── Background row: aspect ratio select + color select ─── */
+.tester-bg-row {
+    display: flex;
+    gap: var(--spacing-200);
+    align-items: flex-start;
+    width: 100%;
+}
+
+.tester-bg-row .select-component:first-child {
+    flex: 1;
+    min-width: 0;
+}
+
+/* Color dot for color select */
+.tester-color-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 24px;
+    background: #9CDE63;
+    border: 1px solid white;
+}
+
+/* ─── Bottom bar: slider + export ─── */
+.tester-footer {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.tester-strength {
+    display: flex;
+    gap: var(--spacing-300);
+    align-items: center;
+}
+
+.tester-strength-label {
+    font-family: 'Alpha Lyrae', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 16px;
+    color: var(--content-primary);
+    text-shadow: 0px 1px 0px var(--outer-bottom-light);
+    white-space: nowrap;
+}
+
+.tester-export-group {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+/* Scale select — fixed width like Figma (56px) */
+.tester-scale-select {
+    width: 56px;
+}
+
+
+/* ═══════════════════════════════════════════════
+   Custom Slider (independent component)
+   Matches Figma design with 3D handle
+   ═══════════════════════════════════════════════ */
+
+.custom-slider {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-300);
+    align-items: center;
+    justify-content: center;
+    padding-top: var(--spacing-300);
+    position: relative;
+    width: 82px;
+    user-select: none;
+}
+
+/* Track container — holds the bar + handle */
+.custom-slider-track-area {
+    position: relative;
+    width: 100%;
+    padding: 0 14px;
+    cursor: pointer;
+}
+
+/* Track bar */
+.custom-slider-bar {
+    position: relative;
+    width: 100%;
+    height: 2px;
+    background: var(--surface-profound);
+    border-radius: var(--radius-full);
+    overflow: visible;
+    box-shadow:
+        0px 1px 0px 0px var(--inner-top-light),
+        inset 0px 1px 0px 0px var(--inner-shadow);
+}
+
+/* Accent fill */
+.custom-slider-fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    background: var(--accent);
+    border-radius: inherit;
+    box-shadow:
+        0px 1px 0px 0px var(--outer-bottom-light),
+        inset 0px 1px 0px 0px var(--inner-shadow);
+    pointer-events: none;
+}
+
+/* Handle — 3D stacked layers */
+.custom-slider-handle {
+    position: absolute;
+    width: 28px;
+    height: 30px;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    cursor: grab;
+    z-index: 2;
+    /* Elevated shadow */
+    filter: drop-shadow(0px 1.586px 3.172px rgba(0, 0, 0, 0.11))
+            drop-shadow(0px 4px 8px rgba(0, 0, 0, 0.07));
+}
+
+.custom-slider-handle:active {
+    cursor: grabbing;
+}
+
+/* Bottom depth layer (rounded bottom, peeks below) */
+.custom-slider-handle-depth {
+    position: absolute;
+    left: 0;
+    width: 28px;
+    height: 9px;
+    top: calc(50% + 2.5px);
+    transform: translateY(-50%);
+    background: var(--surface-below);
+    border-radius: 0 0 6px 6px;
+}
+
+/* Top surface layer */
+.custom-slider-handle-surface {
+    position: absolute;
+    left: 0;
+    width: 28px;
+    height: 12px;
+    top: calc(50% - 2px);
+    transform: translateY(-50%);
+    background: var(--surface-ground);
+    border-radius: var(--radius-lg);
+    box-shadow: inset 0px 1px 0px 0px var(--inner-top-light);
+}
+
+/* Grip lines container (centered on surface) */
+.custom-slider-grip {
+    position: absolute;
+    top: calc(50% - 2px);
+    transform: translateY(-50%);
+    left: 9px;
+    display: flex;
+    gap: 2px;
+    align-items: center;
+}
+
+.custom-slider-grip-line {
+    width: 2px;
+    height: 6px;
+    background: var(--surface-below);
+    box-shadow:
+        0px 1px 0px 0px var(--inner-top-light),
+        inset 0px 1px 0px 0px var(--inner-shadow);
+}
+
+/* Step markers */
+.custom-slider-steps {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 0 14px;
+}
+
+.custom-slider-step {
+    width: 2px;
+    height: 4px;
+    background: var(--surface-below);
+    border-radius: var(--radius-full);
+    box-shadow:
+        0px 1px 0px 0px var(--inner-top-light),
+        inset 0px 1px 0px 0px var(--inner-shadow);
+}

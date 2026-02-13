@@ -1,0 +1,194 @@
+/**
+ * Button Component Styles
+ * 3-layer design from Figma: Root (gradient frame) → Outer (30px elevated surface) → Inner (content, lifts on hover)
+ * Root is a <div role="button"> to avoid browser-enforced overflow:clip on <button>.
+ * Hover lift uses transform (not margin) to avoid layout shifts.
+ * Sizes: default | large (doubled paddings via tokens)
+ */
+
+/* ─── Root layer: Gradient frame wrapper ─── */
+.button-component {
+  /* Reset button defaults */
+  -webkit-appearance: none;
+  appearance: none;
+  border: none;
+  outline: none;
+  font: inherit;
+  color: inherit;
+
+  position: relative;
+  display: inline-flex;
+  cursor: pointer;
+  padding: var(--spacing-025);
+  border-radius: var(--radius-sm);
+  box-shadow: 0px 1px 0px 0px var(--outer-bottom-light);
+  background: linear-gradient(
+    180deg,
+    var(--fake-drop-shadow) 0%,
+    var(--surface-profound) 5.89%,
+    var(--surface-profound) 47%,
+    var(--fake-drop-shadow) 98.77%
+  );
+  font-family: 'Alpha Lyrae', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  overflow: visible;
+  -webkit-user-select: none;
+  user-select: none;
+  transition: padding 150ms cubic-bezier(0.25, 1, 0.45, 1);
+}
+
+.button-component.full-width {
+  width: 100%;
+}
+
+.button-component.full-width .button-inner {
+  width: 100%;
+}
+
+.button-component.half-width {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ─── Outer layer: Fixed height elevated surface, bottom-anchored ─── */
+.button-outer {
+  height: 30px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  width: 100%;
+  overflow: visible;
+  border-radius: var(--radius-lg);
+  background: var(--surface-below);
+  box-shadow:
+    0px 3.487px 6.974px 0px rgba(0, 0, 0, 0.16),
+    0px 9.432px 18.864px 0px rgba(0, 0, 0, 0.13),
+    0px 16px 32px 0px rgba(0, 0, 0, 0.09),
+    0px 22.567px 45.134px 0px rgba(0, 0, 0, 0.05),
+    0px 28.513px 57.026px 0px rgba(0, 0, 0, 0.02),
+    0px 32px 64px 0px rgba(0, 0, 0, 0);
+  transition: box-shadow 150ms cubic-bezier(0.25, 1, 0.45, 1), background 150ms cubic-bezier(0.25, 1, 0.45, 1);
+}
+
+/* ─── Inner layer: Content surface, lifts on hover via transform ─── */
+.button-inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-200);
+  padding: var(--spacing-150) var(--spacing-300);
+  border-radius: var(--radius-lg);
+  background: var(--surface-ground);
+  position: relative;
+  width: fit-content;
+  min-width: fit-content;
+  min-height: 16px;
+  flex-shrink: 0;
+  margin-bottom: var(--spacing-100);
+  transition: transform 150ms cubic-bezier(0.25, 1, 0.45, 1), margin-bottom 150ms cubic-bezier(0.25, 1, 0.45, 1);
+}
+
+/* Inner shadow overlay (via pseudo-element) */
+.button-inner::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0px 1px 0px 0px var(--inner-top-light);
+  pointer-events: none;
+}
+
+/* ─── Label ─── */
+.button-label {
+  color: var(--content-primary);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 16px;
+  text-shadow: 0px 1px 0px var(--outer-bottom-light);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ─── Icon ─── */
+.button-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  color: var(--content-primary);
+  filter: drop-shadow(0px 1px 0px var(--outer-bottom-light));
+}
+
+.button-icon svg,
+.button-icon img {
+  width: 16px;
+  height: 16px;
+  display: block;
+}
+
+/* ─── Hover state: inner lifts via transform (no layout shift) ─── */
+.button-component:hover:not(.disabled) .button-inner {
+  transform: translateY(calc(-1 * var(--spacing-050)));
+}
+
+/* ─── Press state: redistribute root padding (total unchanged → no external shift) ─── */
+/* Rest: padding 1+1=2px. Press: 2+0=2px. Same total → root height stable. */
+.button-component:active:not(.disabled) {
+  padding-top: var(--spacing-050);
+  padding-bottom: 0;
+}
+
+.button-component:active:not(.disabled) .button-outer {
+  background: transparent;
+  box-shadow: none;
+}
+
+.button-component:active:not(.disabled) .button-inner {
+  margin-bottom: 0;
+  transform: none;
+}
+
+/* Keep text-shadow and icon drop-shadow on press (consistent with SC Figma spec) */
+
+/* ─── Disabled state ─── */
+.button-component.disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* ─── Focus state for accessibility ─── */
+.button-component:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+/* ─── Active/selected toggle state (optional) ─── */
+.button-component.active .button-inner {
+  border-radius: var(--radius-sm);
+}
+
+/* ═══════════════════════════════════════════════
+   Size variant: Large — doubled paddings via tokens
+   ═══════════════════════════════════════════════ */
+
+.button-component.large .button-outer {
+  height: 34px;
+}
+
+.button-component.large .button-inner {
+  gap: var(--spacing-400);
+  padding: var(--spacing-300) var(--spacing-600);
+  margin-bottom: var(--spacing-200);
+}
+
+.button-component.large:hover:not(.disabled) .button-inner {
+  transform: translateY(calc(-1 * var(--spacing-100)));
+}
+
+.button-component.large:active:not(.disabled) .button-inner {
+  margin-bottom: 0;
+  transform: none;
+}

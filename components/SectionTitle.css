@@ -1,0 +1,60 @@
+/**
+ * SectionTitle Component Styles
+ * Mapped from Figma Design System to CSS Variables
+ *
+ * Tokens used:
+ * --content-secondary, --content-primary   (label color rest / hover)
+ * --outer-bottom-light                     (debossed text-shadow + icon drop-shadow)
+ * --spacing-200                            (8px gap)
+ */
+
+/* ─── Root container ──────────────────────────── */
+.section-title-component {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-200);
+    padding: var(--spacing-200) var(--spacing-300); /* 8px top/bottom, 12px sides */
+    cursor: pointer;
+    user-select: none;
+}
+
+/* ─── Label ───────────────────────────────────── */
+.section-title-label {
+    flex: 1;
+    min-width: 0;
+    font-family: 'Alpha Lyrae', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 16px;
+    color: var(--content-secondary);
+    text-shadow: 0px 1px 0px var(--outer-bottom-light);
+    transition: color 250ms cubic-bezier(0.25, 1.05, 0.45, 1.0);
+}
+
+.section-title-component:hover .section-title-label {
+    color: var(--content-primary);
+}
+
+/* ─── Chevron icon ────────────────────────────── */
+.section-title-icon {
+    flex-shrink: 0;
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--content-secondary);
+    filter: drop-shadow(0px 1px 0px var(--outer-bottom-light));
+    transition: color 250ms cubic-bezier(0.25, 1.05, 0.45, 1.0),
+                transform 250ms cubic-bezier(0.25, 1.05, 0.45, 1.0);
+}
+
+.section-title-component:hover .section-title-icon {
+    color: var(--content-primary);
+}
+
+/* Opened (default): chevron points down — no transform */
+/* Closed: chevron rotated -90° → points right */
+.section-title-component.closed .section-title-icon {
+    transform: rotate(-90deg);
+}

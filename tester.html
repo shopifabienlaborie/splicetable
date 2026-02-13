@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tester - Splicetable Components</title>
+    <link rel="stylesheet" href="style.css?v=8">
+    <link rel="stylesheet" href="components/Button.css?v=3">
+    <link rel="stylesheet" href="components/SegmentedControl.css?v=4">
+    <link rel="stylesheet" href="components/Knob.css?v=1">
+    <link rel="stylesheet" href="components/Select.css?v=2">
+    <link rel="stylesheet" href="components/Divider.css">
+    <link rel="stylesheet" href="components/Control.css?v=1">
+    <link rel="stylesheet" href="tester.css">
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+    <div class="tester-page">
+        <div id="tester-root"></div>
+    </div>
+
+    <!-- Load shared components -->
+    <script src="components/Button.jsx" type="text/babel" data-type="module"></script>
+    <script src="components/SegmentedControl.jsx" type="text/babel" data-type="module"></script>
+    <script src="components/Knob.jsx" type="text/babel" data-type="module"></script>
+    <script src="components/Select.jsx" type="text/babel" data-type="module"></script>
+    <script src="components/Divider.jsx" type="text/babel" data-type="module"></script>
+    <script src="components/Control.jsx" type="text/babel" data-type="module"></script>
+
+    <script type="text/babel">
+        /* ═══════════════════════════════════════════
+           Custom Slider — independent component
+           ═══════════════════════════════════════════ */
+        const CustomSlider = ({ value = 40, min = 0, max = 100, steps = 3, onChange }) => {
+            const trackRef = React.useRef(null);
+            const [dragging, setDragging] = React.useState(false);
+
+            const pct = max !== min ? (value - min) / (max - min) : 0;
+
+            const updateFromX = (clientX) => {
+                const track = trackRef.current;
+                if (!track) return;
+                const rect = track.getBoundingClientRect();
+                // Track is padded 14px each side inside its container
+                const barLeft = rect.left;
+                const barWidth = rect.width;
+                let ratio = (clientX - barLeft) / barWidth;
+                ratio = Math.max(0, Math.min(1, ratio));
+                const newValue = Math.round(min + ratio * (max - min));
+                if (onChange) onChange(newValue);
+            };
+
+            const handlePointerDown = (e) => {
+                e.preventDefault();
+                setDragging(true);
+                updateFromX(e.clientX);
+
+                const onMove = (ev) => updateFromX(ev.clientX);
+                const onUp = () => {
+                    setDragging(false);
+                    window.removeEventListener('pointermove', onMove);
+                    window.removeEventListener('pointerup', onUp);
+                };
+                window.addEventListener('pointermove', onMove);
+                window.addEventListener('pointerup', onUp);
+            };
+
+            // Generate step markers
+            const stepMarkers = [];
+            for (let i = 0; i < steps; i++) {
+                stepMarkers.push(
+                    <div key={i} className="custom-slider-step" />
+                );
+            }
+
+            return (
+                <div className="custom-slider">
+                    <div className="custom-slider-track-area" onPointerDown={handlePointerDown}>
+                        <div className="custom-slider-bar" ref={trackRef}>
+                            {/* Accent fill */}
+                            <div className="custom-slider-fill" style={{ width: `${pct * 100}%` }} />
+                            {/* Handle */}
+                            <div className="custom-slider-handle"
+                                 style={{ left: `${pct * 100}%` }}
+                            >
+                                <div className="custom-slider-handle-depth" />
+                                <div className="custom-slider-handle-surface" />
+                                <div className="custom-slider-grip">
+                                    <div className="custom-slider-grip-line" />
+                                    <div className="custom-slider-grip-line" />
+                                    <div className="custom-slider-grip-line" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="custom-slider-steps">
+                        {stepMarkers}
+                    </div>
+                </div>
+            );
+        };
+
+        /* ═══════════════════════════════════════════
+           Tester Page
+           ═══════════════════════════════════════════ */
+        const TesterPage = () => {
+            // ─── Theme ──────────────────────────────
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const [theme, setTheme] = React.useState(prefersDark ? 'dark' : 'light');
+
+            React.useEffect(() => {
+                if (theme === 'dark') {
+                    document.documentElement.classList.add('dark-mode');
+                    document.documentElement.classList.remove('light-mode');
+                } else {
+                    document.documentElement.classList.add('light-mode');
+                    document.documentElement.classList.remove('dark-mode');
+                }
+            }, [theme]);
+
+            // Initialize on mount
+            React.useEffect(() => {
+                if (prefersDark) {
+                    document.documentElement.classList.add('dark-mode');
+                    document.documentElement.classList.remove('light-mode');
+                } else {
+                    document.documentElement.classList.add('light-mode');
+                    document.documentElement.classList.remove('dark-mode');
+                }
+            }, []);
+
+            // ─── Dummy state for interactive controls ──
+            const [material, setMaterial] = React.useState('image');
+            const [splicer, setSplicer] = React.useState('stretch');
+            const [canvasRatio, setCanvasRatio] = React.useState('3:4');
+            const [exportScale, setExportScale] = React.useState('1');
+            const [count, setCount] = React.useState(16);
+            const [radius, setRadius] = React.useState(0);
+            const [chaos, setChaos] = React.useState(0);
+            const [cellWidth, setCellWidth] = React.useState(192);
+            const [cellHeight, setCellHeight] = React.useState(192);
+            const [locked, setLocked] = React.useState(true);
+            const [strength, setStrength] = React.useState(40);
+
+            // ─── Icons ──────────────────────────────
+            const LightIcon = () => (
+                <img src="Icons/light.svg" alt="" width="16" height="16" style={{display: 'block'}} />
+            );
+            const DarkIcon = () => (
+                <img src="Icons/dark.svg" alt="" width="16" height="16" style={{display: 'block'}} />
+            );
+            const SquareIcon = () => (
+                <img src="Icons/square.svg" alt="" width="16" height="16" style={{display: 'block'}} />
+            );
+            const ExportIcon = () => (
+                <img src="Icons/export.svg" alt="" width="16" height="16" style={{display: 'block'}} />
+            );
+            const LockIcon = () => (
+                <img src={locked ? "Icons/lock-locked.svg" : "Icons/lock-unlocked.svg"}
+                     alt="" width="16" height="16" style={{display: 'block'}} />
+            );
+
+            return (
+                <div className="tester-container">
+                    {/* ─── Header: Title + Theme ─── */}
+                    <div className="tester-header">
+                        <p className="tester-title">SPLICETABLE</p>
+                        <SegmentedControl
+                            items={[
+                                { label: '', value: 'light', iconBefore: <LightIcon /> },
+                                { label: '', value: 'dark', iconBefore: <DarkIcon /> }
+                            ]}
+                            value={theme}
+                            onChange={(val) => setTheme(val)}
+                            showDot={false}
+                        />
+                    </div>
+
+                    {/* ─── Divider ─── */}
+                    <Divider spacing="sm" />
+
+                    {/* ─── Two-column panel ─── */}
+                    <div className="tester-panel">
+                        {/* Left column */}
+                        <div className="tester-col-left">
+                            {/* Material */}
+                            <Control label="Material">
+                                <SegmentedControl
+                                    items={[
+                                        { label: 'Image', value: 'image' },
+                                        { label: 'Color', value: 'color' }
+                                    ]}
+                                    value={material}
+                                    onChange={setMaterial}
+                                    fullWidth
+                                />
+                            </Control>
+
+                            {/* Splicer */}
+                            <Control label="Splicer">
+                                <SegmentedControl
+                                    items={[
+                                        { label: 'Stretch', value: 'stretch' },
+                                        { label: 'Scatter', value: 'scatter' }
+                                    ]}
+                                    value={splicer}
+                                    onChange={setSplicer}
+                                    fullWidth
+                                />
+                            </Control>
+
+                            {/* Background */}
+                            <Control label="Background">
+                                <div className="tester-bg-row">
+                                    <Select
+                                        value={canvasRatio}
+                                        onChange={setCanvasRatio}
+                                        icon={<SquareIcon />}
+                                        fullWidth
+                                        options={[
+                                            { value: 'original', label: '1:1 (Square)' },
+                                            { value: '4:5', label: '4:5 (Portrait)' },
+                                            { value: '16:9', label: '16:9 (Landscape)' },
+                                            { value: '9:16', label: '9:16 (Portrait)' },
+                                            { value: '4:3', label: '4:3 (Landscape)' },
+                                            { value: '3:4', label: '3:4 (portrait)' }
+                                        ]}
+                                    />
+                                    <Select
+                                        value="color"
+                                        onChange={() => {}}
+                                        icon={<span className="tester-color-dot" />}
+                                        iconOnly
+                                        options={[
+                                            { value: 'color', label: 'Color' }
+                                        ]}
+                                    />
+                                </div>
+                            </Control>
+                        </div>
+
+                        {/* Right column */}
+                        <div className="tester-col-right">
+                            {/* Top row: Count, Radius, Chaos */}
+                            <div className="tester-knob-row">
+                                <Knob label="Count" value={count} min={1} max={100} step={1}
+                                      onChange={setCount} />
+                                <Knob label="Radius" value={radius} min={0} max={100} step={1}
+                                      onChange={setRadius} />
+                                <Knob label="Chaos" value={chaos} min={0} max={100} step={1}
+                                      onChange={setChaos} />
+                            </div>
+
+                            {/* Bottom row: Width, Lock, Height */}
+                            <div className="tester-knob-row-bottom">
+                                <Knob label="Width" value={cellWidth} min={1} max={999} step={1}
+                                      onChange={(v) => {
+                                          setCellWidth(v);
+                                          if (locked) setCellHeight(v);
+                                      }} />
+                                <Knob label="Height" value={cellHeight} min={1} max={999} step={1}
+                                      onChange={(v) => {
+                                          setCellHeight(v);
+                                          if (locked) setCellWidth(v);
+                                      }} />
+
+                                {/* Lock button — absolutely centered between knobs */}
+                                <div className="tester-lock-group" style={{
+                                    position: 'absolute',
+                                    left: '50%',
+                                    transform: 'translateX(-50%)',
+                                    top: '16px'
+                                }}>
+                                    <Button
+                                        label=""
+                                        iconBefore={<LockIcon />}
+                                        onClick={() => setLocked(!locked)}
+                                    />
+                                    <div className={`tester-lock-dot ${locked ? 'engaged' : ''}`} />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* ─── Divider ─── */}
+                    <Divider spacing="sm" />
+
+                    {/* ─── Footer: Strength slider + Export ─── */}
+                    <div className="tester-footer">
+                        <div className="tester-strength">
+                            <p className="tester-strength-label">Strength</p>
+                            <CustomSlider
+                                value={strength}
+                                min={0}
+                                max={100}
+                                steps={3}
+                                onChange={setStrength}
+                            />
+                        </div>
+
+                        <div className="tester-export-group">
+                            <Select
+                                value={exportScale}
+                                onChange={setExportScale}
+                                className="tester-scale-select"
+                                options={[
+                                    { value: '1', label: '1x' },
+                                    { value: '2', label: '2x' },
+                                    { value: '4', label: '4x' }
+                                ]}
+                            />
+                            <Button
+                                label="Export"
+                                iconBefore={<ExportIcon />}
+                                onClick={() => {}}
+                            />
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        /* ─── Mount (wait for external Babel scripts to finish) ─── */
+        function mountTester() {
+            if (typeof SegmentedControl !== 'undefined' &&
+                typeof Knob !== 'undefined' &&
+                typeof Button !== 'undefined' &&
+                typeof Select !== 'undefined' &&
+                typeof Divider !== 'undefined' &&
+                typeof Control !== 'undefined') {
+                const root = ReactDOM.createRoot(document.getElementById('tester-root'));
+                root.render(<TesterPage />);
+            } else {
+                setTimeout(mountTester, 50);
+            }
+        }
+        mountTester();
+    </script>
+</body>
+</html>

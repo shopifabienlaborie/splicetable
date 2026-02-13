@@ -1,0 +1,146 @@
+/**
+ * Control Component Styles
+ * Mapped from Figma Design System to CSS Variables
+ * A molecule component that wraps other controls with consistent labeling.
+ *
+ * Tokens used:
+ * --spacing-200               (8px gap between label row and control)
+ * --spacing-150               (6px label horizontal padding)
+ * --content-primary            (label text color)
+ * --content-secondary          (description / helper text color)
+ * --outer-bottom-light         (debossed text-shadow)
+ * --border-default             (bracket corner borders)
+ * --surface-ground             (label background, masks bracket lines)
+ */
+
+/* ─── Root container ──────────────────────────── */
+.control-component {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--spacing-200);
+    width: 100%;
+}
+
+/* ─── Label row — centered text with corner bracket marks ─── */
+.control-label-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 16px;
+    position: relative;
+}
+
+/* Each half of the label row (left / right) */
+.control-label-half {
+    flex: 1;
+    height: 16px;
+    display: flex;
+    min-width: 0;
+    min-height: 1px;
+}
+
+/* Spacer — takes half of each half, purely structural */
+.control-label-spacer {
+    flex: 1;
+    height: 100%;
+    min-width: 0;
+    min-height: 1px;
+}
+
+/* Bracket column — takes the other half, split into 2 rows */
+.control-label-bracket {
+    flex: 1;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    min-width: 0;
+    min-height: 1px;
+}
+
+/* Top cell (empty, no borders) */
+.control-label-bracket-top {
+    flex: 1;
+    width: 100%;
+    min-width: 0;
+    min-height: 1px;
+}
+
+/* Bottom cell (has borders forming the corner bracket) */
+.control-label-bracket-bottom {
+    flex: 1;
+    width: 100%;
+    min-width: 0;
+    min-height: 1px;
+}
+
+/* Left bracket ⌐ : top + left borders */
+.control-label-half-left .control-label-bracket-bottom {
+    border-top: 1px solid var(--border-default);
+    border-left: 1px solid var(--border-default);
+}
+
+/* Right bracket ¬ : top + right borders */
+.control-label-half-right .control-label-bracket-bottom {
+    border-top: 1px solid var(--border-default);
+    border-right: 1px solid var(--border-default);
+}
+
+/* ─── Label text — absolutely centered, bg masks bracket lines ─── */
+.control-label-text {
+    position: absolute;
+    left: 50%;
+    top: 0;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 var(--spacing-150);
+    font-family: 'Alpha Lyrae', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 16px;
+    color: var(--content-primary);
+    text-align: center;
+    text-shadow: 0px 1px 0px var(--outer-bottom-light);
+    white-space: nowrap;
+    background: var(--surface-ground);
+}
+
+/* ─── Control content area ────────────────────── */
+.control-content {
+    display: flex;
+    align-items: stretch;
+    width: 100%;
+}
+
+.control-content > * {
+    width: 100%;
+}
+
+/* ─── Description text (below control, centered) ─ */
+.control-description {
+    font-family: 'Alpha Lyrae', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 16px;
+    color: var(--content-secondary);
+    text-align: center;
+    text-shadow: 0px 1px 0px var(--outer-bottom-light);
+    white-space: pre-wrap;
+    width: 100%;
+}
+
+/* ─── Helper text ─────────────────────────────── */
+.control-helper-text {
+    font-family: 'Alpha Lyrae', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 16px;
+    color: var(--content-secondary);
+    text-shadow: 0px 1px 0px var(--outer-bottom-light);
+    white-space: pre-wrap;
+    width: 100%;
+}

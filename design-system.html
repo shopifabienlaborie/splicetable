@@ -1,0 +1,4437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Osmosis - Design System</title>
+    <link rel="stylesheet" href="style.css?v=20">
+    <link rel="stylesheet" href="design-system.css?v=20">
+    <link rel="stylesheet" href="components/Button.css?v=3">
+    <link rel="stylesheet" href="components/SegmentedControl.css?v=4">
+    <link rel="stylesheet" href="components/Slider.css?v=4">
+    <link rel="stylesheet" href="components/Knob.css?v=1">
+    <link rel="stylesheet" href="components/Divider.css?v=2">
+    <link rel="stylesheet" href="components/TextField.css?v=6">
+    <link rel="stylesheet" href="components/Select.css?v=2">
+    <link rel="stylesheet" href="components/Control.css?v=1">
+    <link rel="stylesheet" href="components/ImageReplacer.css?v=1">
+    <link rel="stylesheet" href="components/Navbar.css?v=1">
+    <link rel="stylesheet" href="components/SectionTitle.css?v=1">
+    
+    <!-- React & Babel for interactive component demos -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        /* Component Showcase Styles */
+        .component-showcase {
+            margin-bottom: var(--spacing-1000);
+            padding-bottom: var(--spacing-1000);
+            border-bottom: 1px solid var(--border-default);
+        }
+        
+        .component-showcase:last-child {
+            border-bottom: none;
+        }
+        
+        .component-description {
+            font-size: 14px;
+            color: var(--content-secondary);
+            margin: var(--spacing-200) 0 var(--spacing-600);
+        }
+        
+        .variant-group {
+            margin-bottom: var(--spacing-600);
+        }
+        
+        .variant-group h4 {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--content-primary);
+            margin: 0 0 var(--spacing-300) 0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            opacity: 0.7;
+        }
+        
+        .variant-examples {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--spacing-300);
+            padding: var(--spacing-600);
+            background: var(--surface-ground);
+            border-radius: var(--radius-lg);
+        }
+        
+        .props-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: var(--spacing-600) 0;
+            background: var(--surface-above);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+        }
+        
+        .props-table th,
+        .props-table td {
+            padding: var(--spacing-300) var(--spacing-400);
+            text-align: left;
+            border-bottom: 1px solid var(--border-default);
+        }
+        
+        .props-table th {
+            background: var(--surface-ground);
+            color: var(--content-primary);
+            font-weight: 500;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .props-table td {
+            font-size: 14px;
+            color: var(--content-primary);
+        }
+        
+        .props-table td code {
+            background: var(--inner-shadow);
+            padding: 2px var(--spacing-150);
+            border-radius: var(--radius-sm);
+            font-size: 12px;
+            font-family: 'Monaco', 'Menlo', monospace;
+        }
+        
+        .props-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .code-example {
+            margin: var(--spacing-600) 0;
+        }
+        
+        .code-example h4 {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--content-primary);
+            margin: 0 0 var(--spacing-200) 0;
+        }
+        
+        .code-example pre {
+            background: var(--surface-profound);
+            color: var(--content-primary);
+            padding: var(--spacing-400);
+            border-radius: var(--radius-lg);
+            overflow-x: auto;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        
+        .code-example code {
+            font-family: 'Monaco', 'Menlo', monospace;
+        }
+        
+        .token-usage {
+            margin: var(--spacing-600) 0;
+            padding: var(--spacing-400);
+            background: var(--surface-ground);
+            border-radius: var(--radius-lg);
+            border-left: 3px solid var(--content-secondary);
+        }
+        
+        .token-usage h4 {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--content-primary);
+            margin: 0 0 var(--spacing-300) 0;
+        }
+        
+        .token-usage ul {
+            margin: 0;
+            padding-left: var(--spacing-500);
+        }
+        
+        .token-usage li {
+            font-size: 13px;
+            color: var(--content-secondary);
+            margin-bottom: var(--spacing-100);
+            font-family: 'Monaco', 'Menlo', monospace;
+        }
+        
+        /* DS Navbar styles */
+        #ds-navbar-root {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            width: 100%;
+        }
+        
+        #ds-navbar-root .navbar-component {
+            padding: 0;
+            width: 100%;
+        }
+        
+        #ds-navbar-root .navbar-outer {
+            border-radius: 0;
+            height: 54px;
+            width: 100%;
+            box-shadow: 
+                0px 1px 7px 0px rgba(0, 0, 0, 0.04),
+                0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+        
+        #ds-navbar-root .navbar-inner {
+            width: 100%;
+            box-sizing: border-box;
+        }
+        
+        #ds-navbar-root .navbar-center {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+        }
+        
+        .ds-navbar-back {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--content-primary);
+            text-decoration: none;
+            padding: 6px 12px;
+            border-radius: var(--radius-md);
+            background: var(--surface-below);
+            border: 1px solid var(--border-default);
+            transition: all 0.15s ease;
+            cursor: pointer;
+            white-space: nowrap;
+            box-shadow: 
+                inset 0px 1px 0px 0px var(--inner-top-light),
+                inset 0px -1px 0px 0px var(--inner-shadow);
+        }
+        
+        .ds-navbar-back:hover {
+            background: var(--surface-ground);
+        }
+        
+        .ds-navbar-back svg {
+            flex-shrink: 0;
+        }
+        
+        .ds-navbar-title {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--content-primary);
+            white-space: nowrap;
+        }
+        
+        /* Input field styles for React demo controls - EXCLUDE TextField component inputs */
+        input[type="text"]:not(.text-field-input),
+        input[type="number"]:not(.text-field-input) {
+            width: 100%;
+            padding: var(--spacing-200) var(--spacing-300);
+            background: var(--surface-above);
+            color: var(--content-primary);
+            border: 1px solid var(--border-default);
+            border-radius: var(--radius-lg);
+            font-size: 14px;
+            font-weight: 500;
+            font-family: 'Alpha Lyrae', sans-serif;
+            box-shadow: 
+                0px 0.45px 0.63px -1px rgba(0, 0, 0, 0.26),
+                0px 1.21px 1.71px -1.5px rgba(0, 0, 0, 0.25),
+                0px 2.66px 3.76px -2.25px rgba(0, 0, 0, 0.23),
+                0px 5.9px 8.35px -3px rgba(0, 0, 0, 0.19),
+                0px 10px 21.21px -3.75px rgba(0, 0, 0, 0.05),
+                inset 1px 1px 1px 0px var(--inner-top-light),
+                inset -1px -1px 1px 0px var(--inner-shadow);
+        }
+        
+        input[type="text"]:not(.text-field-input):focus,
+        input[type="number"]:not(.text-field-input):focus {
+            outline: none;
+            border-color: var(--border-default);
+        }
+        
+        input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body class="design-system-body">
+    <div id="ds-navbar-root"></div>
+
+    <div class="ds-layout">
+        <!-- Sidebar Navigation -->
+        <nav class="ds-sidebar" id="ds-sidebar">
+            <div class="ds-sidebar-inner">
+                <div class="ds-sidebar-group">
+                    <a href="#section-tokens" class="ds-sidebar-heading active" data-section="section-tokens">Design Tokens</a>
+                    <a href="#section-surface-colors" class="ds-sidebar-link" data-section="section-surface-colors">Surface Colors</a>
+                    <a href="#section-content-colors" class="ds-sidebar-link" data-section="section-content-colors">Content Colors</a>
+                    <a href="#section-border-colors" class="ds-sidebar-link" data-section="section-border-colors">Border & Shadows</a>
+                    <a href="#section-spacing" class="ds-sidebar-link" data-section="section-spacing">Spacing</a>
+                    <a href="#section-radius" class="ds-sidebar-link" data-section="section-radius">Border Radius</a>
+                    <a href="#section-typography" class="ds-sidebar-link" data-section="section-typography">Typography</a>
+                </div>
+                <div class="ds-sidebar-group">
+                    <a href="#section-components" class="ds-sidebar-heading" data-section="section-components">Components</a>
+                    <a href="#section-button" class="ds-sidebar-link" data-section="section-button">Button</a>
+                    <a href="#section-segmented-control" class="ds-sidebar-link" data-section="section-segmented-control">Segmented Control</a>
+                    <a href="#section-slider" class="ds-sidebar-link" data-section="section-slider">Slider</a>
+                    <a href="#section-knob" class="ds-sidebar-link" data-section="section-knob">Knob</a>
+                    <a href="#section-divider" class="ds-sidebar-link" data-section="section-divider">Divider</a>
+                    <a href="#section-control" class="ds-sidebar-link" data-section="section-control">Control</a>
+                    <a href="#section-image-replacer" class="ds-sidebar-link" data-section="section-image-replacer">Image Replacer</a>
+                    <a href="#section-navbar" class="ds-sidebar-link" data-section="section-navbar">Navbar</a>
+                    <a href="#section-textfield" class="ds-sidebar-link" data-section="section-textfield">Text Field</a>
+                    <a href="#section-select" class="ds-sidebar-link" data-section="section-select">Select</a>
+                    <a href="#section-section-title" class="ds-sidebar-link" data-section="section-section-title">Section Title</a>
+                    <a href="#section-labels" class="ds-sidebar-link" data-section="section-labels">Labels & Text</a>
+                </div>
+                <div class="ds-sidebar-group">
+                    <a href="#section-guidelines" class="ds-sidebar-heading" data-section="section-guidelines">Usage Guidelines</a>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="ds-container">
+        <!-- Design Tokens Section -->
+        <section class="ds-section" id="section-tokens">
+            <h2 class="ds-section-title">Design Tokens</h2>
+            
+            <!-- Surface Colors -->
+            <div class="ds-subsection" id="section-surface-colors">
+                <h3 class="ds-subsection-title">Surface Colors</h3>
+                <p class="usage-text">Surface colors define the elevation layers of the interface, from deepest (profound) to highest (above).</p>
+                <div class="token-grid">
+                    <div class="token-card">
+                        <div class="color-swatch" style="background: #F7F7F7;"></div>
+                        <div class="token-info">
+                            <span class="token-name">surface-above</span>
+                            <code class="token-value">Light: #F7F7F7 | Dark: #464646</code>
+                        </div>
+                    </div>
+                    <div class="token-card">
+                        <div class="color-swatch" style="background: #EFEFEF;"></div>
+                        <div class="token-info">
+                            <span class="token-name">surface-ground</span>
+                            <code class="token-value">Light: #EFEFEF | Dark: #363636</code>
+                        </div>
+                    </div>
+                    <div class="token-card">
+                        <div class="color-swatch" style="background: #DEDEDE;"></div>
+                        <div class="token-info">
+                            <span class="token-name">surface-below</span>
+                            <code class="token-value">Light: #DEDEDE | Dark: #292929</code>
+                        </div>
+                    </div>
+                    <div class="token-card">
+                        <div class="color-swatch" style="background: #CDCDCD;"></div>
+                        <div class="token-info">
+                            <span class="token-name">surface-profound</span>
+                            <code class="token-value">Light: #CDCDCD | Dark: #1B1B1B</code>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Content Colors -->
+            <div class="ds-subsection" id="section-content-colors">
+                <h3 class="ds-subsection-title">Content Colors</h3>
+                <p class="usage-text">Content colors for text and icons, with primary for main content and secondary for supporting content.</p>
+                <div class="token-grid">
+                    <div class="token-card">
+                        <div class="color-swatch" style="background: #3B3B3B;"></div>
+                        <div class="token-info">
+                            <span class="token-name">content-primary</span>
+                            <code class="token-value">Light: #3B3B3B | Dark: #E5E5E5</code>
+                        </div>
+                    </div>
+                    <div class="token-card">
+                        <div class="color-swatch" style="background: #717171;"></div>
+                        <div class="token-info">
+                            <span class="token-name">content-secondary</span>
+                            <code class="token-value">Light: #717171 | Dark: #ACACAC</code>
+                        </div>
+                    </div>
+                    <div class="token-card">
+                        <div class="color-swatch" style="background: #8C8C8C;"></div>
+                        <div class="token-info">
+                            <span class="token-name">content-tertiary</span>
+                            <code class="token-value">#8C8C8C (both modes)</code>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Border Colors -->
+            <div class="ds-subsection" id="section-border-colors">
+                <h3 class="ds-subsection-title">Border & Shadow Colors</h3>
+                <p class="usage-text">Colors used for borders and shadow effects throughout the interface.</p>
+                <div class="token-grid">
+                    <div class="token-card">
+                        <div class="color-swatch" style="background: #D1D1D1;"></div>
+                        <div class="token-info">
+                            <span class="token-name">border-default</span>
+                            <code class="token-value">Light: #D1D1D1 | Dark: #555555</code>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Spacing -->
+            <div class="ds-subsection" id="section-spacing">
+                <h3 class="ds-subsection-title">Spacing Scale</h3>
+                <p class="usage-text">Consistent spacing values based on a 4px grid. Use these for padding, margin, and gap properties.</p>
+                <div class="token-grid">
+                    <div class="token-card">
+                        <div class="spacing-demo" style="width: 0px;"></div>
+                        <div class="token-info">
+                            <span class="token-name">spacing-0</span>
+                            <code class="token-value">0px</code>
+                        </div>
+                    </div>
+                    <div class="token-card">
+                        <div class="spacing-demo" style="width: 1px;"></div>
+                        <div class="token-info">
+                            <span class="token-name">spacing-025</span>
+                            <code class="token-value">1px</code>
+                        </div>
+                    </div>
+                    <div class="token-card">
+                        <div class="spacing-demo" style="width: 2px;"></div>
+                        <div class="token-info">
+                            <span class="token-name">spacing-050</span>
+                            <code class="token-value">2px</code>
+                        </div>
+                    </div>
+                    <div class="token-card">
+                        <div class="spacing-demo" style="width: 4px;"></div>
+                        <div class="token-info">
+                            <span class="token-name">spacing-100</span>
+                            <code class="token-value">4px</code>
+                        </div>
+                    </div>
+                    <div class="token-card">
+                        <div class="spacing-demo" style="width: 6px;"></div>
+                        <div class="token-info">
+                            <span class="token-name">spacing-150</span>
+                            <code class="token-value">6px</code>
+                        </div>
+                    </div>
+                    <div class="token-card">
+                        <div class="spacing-demo" style="width: 8px;"></div>
+                        <div class="token-info">
+                            <span class="token-name">spacing-200</span>
+                            <code class="token-value">8px</code>
+                        </div>
+                    </div>
+                    <div class="token-card">
+                        <div class="spacing-demo" style="width: 12px;"></div>
+                        <div class="token-info">
+                            <span class="token-name">spacing-300</span>
+                            <code class="token-value">12px</code>
+                        </div>
+                    </div>
+                    <div class="token-card">
+                        <div class="spacing-demo" style="width: 16px;"></div>
+                        <div class="token-info">
+                            <span class="token-name">spacing-400</span>
+                            <code class="token-value">16px</code>
+                        </div>
+                    </div>
+                    <div class="token-card">
+                        <div class="spacing-demo" style="width: 20px;"></div>
+                        <div class="token-info">
+                            <span class="token-name">spacing-500</span>
+                            <code class="token-value">20px</code>
+                        </div>
+                    </div>
+                    <div class="token-card">
+                        <div class="spacing-demo" style="width: 24px;"></div>
+                        <div class="token-info">
+                            <span class="token-name">spacing-600</span>
+                            <code class="token-value">24px</code>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Border Radius -->
+            <div class="ds-subsection" id="section-radius">
+                <h3 class="ds-subsection-title">Border Radius</h3>
+                <p class="usage-text">Three radius values for consistent rounding across components.</p>
+                <div class="token-grid">
+                    <div class="token-card">
+                        <div class="radius-demo" style="border-radius: 2px; background: var(--content-primary);"></div>
+                        <div class="token-info">
+                            <span class="token-name">radius-sm</span>
+                            <code class="token-value">2px</code>
+                        </div>
+                    </div>
+                    <div class="token-card">
+                        <div class="radius-demo" style="border-radius: 4px; background: var(--content-primary);"></div>
+                        <div class="token-info">
+                            <span class="token-name">radius-md</span>
+                            <code class="token-value">4px</code>
+                        </div>
+                    </div>
+                    <div class="token-example">
+                        <div class="radius-demo" style="border-radius: 10px; background: var(--content-primary);"></div>
+                        <div class="token-info">
+                            <span class="token-name">radius-lg</span>
+                            <code class="token-value">10px</code>
+                        </div>
+                    </div>
+                    <div class="token-card">
+                        <div class="radius-demo" style="border-radius: 9999px; background: var(--content-primary);"></div>
+                        <div class="token-info">
+                            <span class="token-name">radius-full</span>
+                            <code class="token-value">9999px</code>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Typography -->
+            <div class="ds-subsection" id="section-typography">
+                <h3 class="ds-subsection-title">Typography</h3>
+                <p class="usage-text">Typography system using Alpha Lyrae as the primary font. Consistent font sizing, weights, and line heights across all components.</p>
+                
+                <div style="margin-top: var(--spacing-600);">
+                    <h4 style="font-size: 14px; font-weight: 500; color: var(--content-primary); margin: 0 0 var(--spacing-400) 0;">Font Family</h4>
+                    <div class="token-grid">
+                        <div class="token-card" style="grid-column: 1 / -1;">
+                            <div style="padding: var(--spacing-400); background: var(--surface-above); border-radius: var(--radius-md);">
+                                <p style="font-family: 'Alpha Lyrae', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 24px; font-weight: 500; margin: 0; color: var(--content-primary);">
+                                    Alpha Lyrae Medium
+                                </p>
+                                <p style="font-family: 'Alpha Lyrae', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 14px; color: var(--content-secondary); margin: var(--spacing-200) 0 0 0;">
+                                    The quick brown fox jumps over the lazy dog
+                                </p>
+                            </div>
+                            <div class="token-info" style="margin-top: var(--spacing-200);">
+                                <span class="token-name">font-family</span>
+                                <code class="token-value">'Alpha Lyrae', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif</code>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top: var(--spacing-600);">
+                    <h4 style="font-size: 14px; font-weight: 500; color: var(--content-primary); margin: 0 0 var(--spacing-400) 0;">Font Sizes</h4>
+                    <div class="token-grid">
+                        <div class="token-card">
+                            <div style="padding: var(--spacing-400); background: var(--surface-above); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; min-height: 80px;">
+                                <p style="font-family: 'Alpha Lyrae', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 14px; font-weight: 500; margin: 0; color: var(--content-primary);">
+                                    Body Text
+                                </p>
+                            </div>
+                            <div class="token-info" style="margin-top: var(--spacing-200);">
+                                <span class="token-name">Body / Medium</span>
+                                <code class="token-value">14px</code>
+                            </div>
+                        </div>
+                        <div class="token-card">
+                            <div style="padding: var(--spacing-400); background: var(--surface-above); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; min-height: 80px;">
+                                <p style="font-family: 'Alpha Lyrae', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 12px; font-weight: 500; margin: 0; color: var(--content-primary);">
+                                    Small Text
+                                </p>
+                            </div>
+                            <div class="token-info" style="margin-top: var(--spacing-200);">
+                                <span class="token-name">Small / Caption</span>
+                                <code class="token-value">12px</code>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top: var(--spacing-600);">
+                    <h4 style="font-size: 14px; font-weight: 500; color: var(--content-primary); margin: 0 0 var(--spacing-400) 0;">Font Weight</h4>
+                    <div class="token-grid">
+                        <div class="token-card">
+                            <div style="padding: var(--spacing-400); background: var(--surface-above); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; min-height: 80px;">
+                                <p style="font-family: 'Alpha Lyrae', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 14px; font-weight: 500; margin: 0; color: var(--content-primary);">
+                                    Medium 500
+                                </p>
+                            </div>
+                            <div class="token-info" style="margin-top: var(--spacing-200);">
+                                <span class="token-name">font-weight</span>
+                                <code class="token-value">500 (Medium)</code>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top: var(--spacing-600);">
+                    <h4 style="font-size: 14px; font-weight: 500; color: var(--content-primary); margin: 0 0 var(--spacing-400) 0;">Line Height</h4>
+                    <div class="token-grid">
+                        <div class="token-card">
+                            <div style="padding: var(--spacing-400); background: var(--surface-above); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; min-height: 80px;">
+                                <p style="font-family: 'Alpha Lyrae', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 14px; font-weight: 500; line-height: 16px; margin: 0; color: var(--content-primary);">
+                                    Line Height<br/>16px
+                                </p>
+                            </div>
+                            <div class="token-info" style="margin-top: var(--spacing-200);">
+                                <span class="token-name">line-height</span>
+                                <code class="token-value">16px</code>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top: var(--spacing-600); padding: var(--spacing-400); background: var(--surface-ground); border-radius: var(--radius-lg); border-left: 3px solid var(--content-secondary);">
+                    <h4 style="font-size: 13px; font-weight: 500; color: var(--content-primary); margin: 0 0 var(--spacing-200) 0;">Typography Usage Examples</h4>
+                    <ul style="margin: 0; padding-left: var(--spacing-600); color: var(--content-secondary); font-size: 13px; line-height: 20px;">
+                        <li><strong>Body (14px):</strong> Primary component text - buttons, inputs, labels, segmented controls</li>
+                        <li><strong>Small (12px):</strong> Secondary text - descriptions, helper text, captions, error messages</li>
+                        <li><strong>Weight 500:</strong> Used consistently across all text for optimal readability</li>
+                        <li><strong>Line Height 16px:</strong> Tight line height for compact UI elements</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Components Section -->
+        <section class="ds-section" id="section-components">
+            <h2 class="ds-section-title">Components</h2>
+
+            <!-- Button Component - Interactive React Demo -->
+            <div class="component-showcase" id="section-button">
+                <h3>Button</h3>
+                <p class="component-description">3-layer button with gradient frame, elevated surface, and content surface. Features physical press-down and hover-lift effects via padding shifts. Extracted directly from Figma with 1:1 fidelity.</p>
+                
+                <!-- React Interactive Demo -->
+                <div id="button-demo-root"></div>
+
+                <table class="props-table">
+                    <thead>
+                        <tr>
+                            <th>Prop</th>
+                            <th>Type</th>
+                            <th>Default</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>label</code></td>
+                            <td><code>string</code></td>
+                            <td><code>'Label'</code></td>
+                            <td>Button text label</td>
+                        </tr>
+                        <tr>
+                            <td><code>iconBefore</code></td>
+                            <td><code>boolean | ReactNode</code></td>
+                            <td><code>false</code></td>
+                            <td>Icon before label (true for default icon)</td>
+                        </tr>
+                        <tr>
+                            <td><code>iconAfter</code></td>
+                            <td><code>boolean | ReactNode</code></td>
+                            <td><code>false</code></td>
+                            <td>Icon after label (true for default icon)</td>
+                        </tr>
+                        <tr>
+                            <td><code>active</code></td>
+                            <td><code>boolean</code></td>
+                            <td><code>false</code></td>
+                            <td>Toggle/selected state (changes inner corner radius)</td>
+                        </tr>
+                        <tr>
+                            <td><code>disabled</code></td>
+                            <td><code>boolean</code></td>
+                            <td><code>false</code></td>
+                            <td>Whether the button is disabled</td>
+                        </tr>
+                        <tr>
+                            <td><code>fullWidth</code></td>
+                            <td><code>boolean</code></td>
+                            <td><code>false</code></td>
+                            <td>Whether button takes full width</td>
+                        </tr>
+                        <tr>
+                            <td><code>onClick</code></td>
+                            <td><code>function</code></td>
+                            <td><code>undefined</code></td>
+                            <td>Click event handler</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="code-example">
+                    <h4>React JSX</h4>
+                    <pre><code>&lt;Button 
+  label="Click me"
+  iconBefore={true}
+  onClick={() => console.log('clicked')}
+/&gt;</code></pre>
+                </div>
+
+                <div class="token-usage">
+                    <h4>CSS Variables Used</h4>
+                    <ul>
+                        <li>--fake-drop-shadow, --surface-profound (root gradient frame)</li>
+                        <li>--surface-below (outer elevated surface)</li>
+                        <li>--surface-ground (inner content surface)</li>
+                        <li>--content-primary (text color)</li>
+                        <li>--inner-top-light (inner shadow overlay)</li>
+                        <li>--outer-bottom-light (outer bevel &amp; text/icon shadow)</li>
+                        <li>--spacing-025, --spacing-050, --spacing-100, --spacing-150, --spacing-200, --spacing-300 (padding &amp; gaps)</li>
+                        <li>--radius-sm, --radius-lg (border-radius)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Segmented Control Component - Interactive React Demo -->
+            <div class="component-showcase" id="section-segmented-control">
+                <h3>Segmented Control</h3>
+                <p class="component-description">Toggle control for mutually exclusive options, supporting 2-4 segments. Uses the same 3-layer design as Button: Root (gradient frame) → Item outer (elevated surface) → Item inner (content). Position-dependent border radii, hover lift via padding, press flatten with 1px inner offset for tactile feedback. Extracted directly from Figma with 1:1 fidelity.</p>
+                
+                <!-- React Interactive Demo -->
+                <div id="segmented-control-demo-root"></div>
+
+                <table class="props-table">
+                    <thead>
+                        <tr>
+                            <th>Prop</th>
+                            <th>Type</th>
+                            <th>Default</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>items</code></td>
+                            <td><code>Array&lt;{label, value, iconBefore?, iconAfter?}&gt;</code></td>
+                            <td><code>[]</code></td>
+                            <td>Array of segment items (2-4 items)</td>
+                        </tr>
+                        <tr>
+                            <td><code>value</code></td>
+                            <td><code>string</code></td>
+                            <td><code>undefined</code></td>
+                            <td>Currently selected value</td>
+                        </tr>
+                        <tr>
+                            <td><code>onChange</code></td>
+                            <td><code>function(value)</code></td>
+                            <td><code>undefined</code></td>
+                            <td>Called when selection changes</td>
+                        </tr>
+                        <tr>
+                            <td><code>disabled</code></td>
+                            <td><code>boolean</code></td>
+                            <td><code>false</code></td>
+                            <td>Whether the control is disabled</td>
+                        </tr>
+                        <tr>
+                            <td><code>fullWidth</code></td>
+                            <td><code>boolean</code></td>
+                            <td><code>false</code></td>
+                            <td>Whether control takes full width</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="code-example">
+                    <h4>React JSX</h4>
+                    <pre><code>&lt;SegmentedControl 
+  items={[
+    { label: 'Option 1', value: 'opt1' },
+    { label: 'Option 2', value: 'opt2' }
+  ]}
+  value={selectedValue}
+  onChange={(value) => setSelectedValue(value)}
+/&gt;</code></pre>
+                </div>
+
+                <div class="token-usage">
+                    <h4>CSS Variables Used</h4>
+                    <ul>
+                        <li>--fake-drop-shadow, --surface-profound (root gradient frame)</li>
+                        <li>--surface-below (item outer elevated surface)</li>
+                        <li>--surface-ground (item inner content surface)</li>
+                        <li>--content-primary (text/icon color)</li>
+                        <li>--inner-top-light (inner shadow overlay)</li>
+                        <li>--inner-shadow (active hover inset shadow)</li>
+                        <li>--outer-bottom-light (outer bevel &amp; text/icon shadow)</li>
+                        <li>--spacing-025, --spacing-050, --spacing-100, --spacing-150, --spacing-200, --spacing-300 (padding &amp; gaps)</li>
+                        <li>--radius-sm, --radius-lg (position-dependent border-radius)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Slider Component - Interactive React Demo -->
+            <div class="component-showcase" id="section-slider">
+                <h3>Slider</h3>
+                <p class="component-description">Range input control for numeric values with custom thumb design and value display. Extracted directly from Figma with 1:1 fidelity.</p>
+                
+                <!-- React Interactive Demo -->
+                <div id="slider-demo-root"></div>
+
+                <table class="props-table">
+                    <thead>
+                        <tr>
+                            <th>Prop</th>
+                            <th>Type</th>
+                            <th>Default</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>value</code></td>
+                            <td><code>number</code></td>
+                            <td><code>50</code></td>
+                            <td>Current value</td>
+                        </tr>
+                        <tr>
+                            <td><code>min</code></td>
+                            <td><code>number</code></td>
+                            <td><code>0</code></td>
+                            <td>Minimum value</td>
+                        </tr>
+                        <tr>
+                            <td><code>max</code></td>
+                            <td><code>number</code></td>
+                            <td><code>100</code></td>
+                            <td>Maximum value</td>
+                        </tr>
+                        <tr>
+                            <td><code>step</code></td>
+                            <td><code>number</code></td>
+                            <td><code>1</code></td>
+                            <td>Step increment</td>
+                        </tr>
+                        <tr>
+                            <td><code>onChange</code></td>
+                            <td><code>function(value)</code></td>
+                            <td><code>undefined</code></td>
+                            <td>Called when value changes</td>
+                        </tr>
+                        <tr>
+                            <td><code>showPercentage</code></td>
+                            <td><code>boolean</code></td>
+                            <td><code>false</code></td>
+                            <td>Display value as percentage</td>
+                        </tr>
+                        <tr>
+                            <td><code>disabled</code></td>
+                            <td><code>boolean</code></td>
+                            <td><code>false</code></td>
+                            <td>Whether the slider is disabled</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="code-example">
+                    <h4>React JSX</h4>
+                    <pre><code>&lt;Slider 
+  value={sliderValue}
+  min={0}
+  max={100}
+  step={1}
+  onChange={(value) => setSliderValue(value)}
+  showPercentage={false}
+/&gt;</code></pre>
+                </div>
+
+                <div class="token-usage">
+                    <h4>CSS Variables Used</h4>
+                    <ul>
+                        <li>--surface-below (track and container background)</li>
+                        <li>--surface-above (thumb and value display background)</li>
+                        <li>--content-primary (value text)</li>
+                        <li>--inner-shadow, --inner-side-shadow (inner shadows)</li>
+                        <li>--inner-top-light (inset highlights)</li>
+                        <li>--outer-bottom-light (bevel effect)</li>
+                        <li>--spacing-150 (padding)</li>
+                        <li>--radius-sm, --radius-full (border-radius)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Knob Component - Interactive React Demo -->
+            <div class="component-showcase" id="section-knob">
+                <h3>Knob</h3>
+                <p class="component-description">Circular rotary control replacing traditional sliders. 3-layer elevated design (same as Button). Indicator bar rotates from -133° to +133° while light/shadow effects stay fixed. Dots illuminate in accent color based on value. On hover, shows editable value with reset icon.</p>
+                
+                <!-- React Interactive Demo -->
+                <div id="knob-demo-root"></div>
+
+                <table class="props-table">
+                    <thead>
+                        <tr>
+                            <th>Prop</th>
+                            <th>Type</th>
+                            <th>Default</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>label</code></td>
+                            <td><code>string</code></td>
+                            <td><code>'Label'</code></td>
+                            <td>Label shown below knob at rest</td>
+                        </tr>
+                        <tr>
+                            <td><code>value</code></td>
+                            <td><code>number</code></td>
+                            <td><code>50</code></td>
+                            <td>Current value</td>
+                        </tr>
+                        <tr>
+                            <td><code>min</code></td>
+                            <td><code>number</code></td>
+                            <td><code>0</code></td>
+                            <td>Minimum value</td>
+                        </tr>
+                        <tr>
+                            <td><code>max</code></td>
+                            <td><code>number</code></td>
+                            <td><code>100</code></td>
+                            <td>Maximum value</td>
+                        </tr>
+                        <tr>
+                            <td><code>step</code></td>
+                            <td><code>number</code></td>
+                            <td><code>1</code></td>
+                            <td>Step increment</td>
+                        </tr>
+                        <tr>
+                            <td><code>defaultValue</code></td>
+                            <td><code>number</code></td>
+                            <td><code>min</code></td>
+                            <td>Value for reset button</td>
+                        </tr>
+                        <tr>
+                            <td><code>onChange</code></td>
+                            <td><code>function(value)</code></td>
+                            <td><code>undefined</code></td>
+                            <td>Called when value changes</td>
+                        </tr>
+                        <tr>
+                            <td><code>showPercentage</code></td>
+                            <td><code>boolean</code></td>
+                            <td><code>false</code></td>
+                            <td>Append % suffix to value display</td>
+                        </tr>
+                        <tr>
+                            <td><code>disabled</code></td>
+                            <td><code>boolean</code></td>
+                            <td><code>false</code></td>
+                            <td>Whether the knob is disabled</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="code-example">
+                    <h4>React JSX</h4>
+                    <pre><code>&lt;Knob 
+  label="Scale"
+  value={100}
+  min={0}
+  max={400}
+  step={5}
+  showPercentage={true}
+  onChange={(value) => setScale(value)}
+/&gt;</code></pre>
+                </div>
+
+                <div class="token-usage">
+                    <h4>CSS Variables Used</h4>
+                    <ul>
+                        <li>--fake-drop-shadow, --surface-profound (root gradient frame)</li>
+                        <li>--surface-below (outer elevated surface)</li>
+                        <li>--surface-ground (inner knob face)</li>
+                        <li>--surface-bottomless (indicator bar at rest)</li>
+                        <li>--accent (indicator bar on hover, lit dots)</li>
+                        <li>--surface-above (value field on hover)</li>
+                        <li>--inner-shadow, --inner-top-light (shadow overlays)</li>
+                        <li>--outer-bottom-light (bevel effect)</li>
+                        <li>--content-primary, --content-secondary (text/icons)</li>
+                        <li>--focus (focus ring)</li>
+                        <li>--radius-full, --radius-sm (border-radius)</li>
+                        <li>--spacing-025, --spacing-100, --spacing-150, --spacing-200 (padding)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Divider Component - Interactive React Demo -->
+            <div class="component-showcase" id="section-divider">
+                <h3>Divider</h3>
+                <p class="component-description">Horizontal divider line for separating content sections. Features subtle shadows and bevel effects. Extracted directly from Figma with 1:1 fidelity.</p>
+                
+                <!-- React Interactive Demo -->
+                <div id="divider-demo-root"></div>
+
+                <table class="props-table">
+                    <thead>
+                        <tr>
+                            <th>Prop</th>
+                            <th>Type</th>
+                            <th>Default</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>spacing</code></td>
+                            <td><code>'sm' | 'md' | 'lg'</code></td>
+                            <td><code>'md'</code></td>
+                            <td>Vertical spacing around divider</td>
+                        </tr>
+                        <tr>
+                            <td><code>className</code></td>
+                            <td><code>string</code></td>
+                            <td><code>''</code></td>
+                            <td>Additional CSS classes</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="code-example">
+                    <h4>React JSX</h4>
+                    <pre><code>&lt;Divider spacing="md" /&gt;</code></pre>
+                </div>
+
+                <div class="token-usage">
+                    <h4>CSS Variables Used</h4>
+                    <ul>
+                        <li>--surface-below (divider line background)</li>
+                        <li>--inner-shadow, --inner-side-shadow (inner shadows)</li>
+                        <li>--outer-bottom-light (bevel effect)</li>
+                        <li>--spacing-100, --spacing-200 (vertical padding)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Control Component - Interactive React Demo -->
+            <div class="component-showcase" id="section-control">
+                <h3>Control (Molecule)</h3>
+                <p class="component-description">A molecule component that wraps different control types (Button, Slider, SegmentedControl, etc.) with consistent labeling, optional description, and helper text. Centralizes control UI patterns across the app. Extracted directly from Figma with 1:1 fidelity.</p>
+                
+                <!-- React Interactive Demo -->
+                <div id="control-demo-root"></div>
+
+                <table class="props-table">
+                    <thead>
+                        <tr>
+                            <th>Prop</th>
+                            <th>Type</th>
+                            <th>Default</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>label</code></td>
+                            <td><code>string</code></td>
+                            <td><code>'Label'</code></td>
+                            <td>Main label text</td>
+                        </tr>
+                        <tr>
+                            <td><code>description</code></td>
+                            <td><code>string</code></td>
+                            <td><code>''</code></td>
+                            <td>Optional description text below label</td>
+                        </tr>
+                        <tr>
+                            <td><code>helperText</code></td>
+                            <td><code>string</code></td>
+                            <td><code>''</code></td>
+                            <td>Optional helper text below control</td>
+                        </tr>
+                        <tr>
+                            <td><code>children</code></td>
+                            <td><code>ReactNode</code></td>
+                            <td><code>undefined</code></td>
+                            <td>The control component to display</td>
+                        </tr>
+                        <tr>
+                            <td><code>className</code></td>
+                            <td><code>string</code></td>
+                            <td><code>''</code></td>
+                            <td>Additional CSS classes</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="code-example">
+                    <h4>React JSX</h4>
+                    <pre><code>&lt;Control 
+  label="Background Color"
+  description="Choose the background color"
+  helperText="This will affect all pages"
+&gt;
+  &lt;SegmentedControl
+    items={[
+      { value: 'white', label: 'White' },
+      { value: 'gray', label: 'Gray' }
+    ]}
+    value={bgColor}
+    onChange={setBgColor}
+  /&gt;
+&lt;/Control&gt;</code></pre>
+                </div>
+
+                <div class="token-usage">
+                    <h4>CSS Variables Used</h4>
+                    <ul>
+                        <li>--content-primary (label color)</li>
+                        <li>--content-secondary (description & helper text)</li>
+                        <li>--outer-bottom-light (text shadow/bevel)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- ImageReplacer Component - Interactive React Demo -->
+            <div class="component-showcase" id="section-image-replacer">
+                <h3>Image Replacer</h3>
+                <p class="component-description">A clickable component that allows users to replace an image via OS file picker. Shows thumbnail (30x30px), filename (auto-truncated at 32 characters), and reset button. Features hover state with subtle background and shadow effects. Extracted directly from Figma with 1:1 fidelity.</p>
+                
+                <!-- React Interactive Demo -->
+                <div id="image-replacer-demo-root"></div>
+
+                <table class="props-table">
+                    <thead>
+                        <tr>
+                            <th>Prop</th>
+                            <th>Type</th>
+                            <th>Default</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>imageSrc</code></td>
+                            <td><code>string</code></td>
+                            <td><code>''</code></td>
+                            <td>Current image URL/path</td>
+                        </tr>
+                        <tr>
+                            <td><code>fileName</code></td>
+                            <td><code>string</code></td>
+                            <td><code>'No image selected'</code></td>
+                            <td>Current filename (auto-truncated at 32 chars)</td>
+                        </tr>
+                        <tr>
+                            <td><code>onImageChange</code></td>
+                            <td><code>function(file, previewUrl)</code></td>
+                            <td><code>undefined</code></td>
+                            <td>Called when new image is selected</td>
+                        </tr>
+                        <tr>
+                            <td><code>onReset</code></td>
+                            <td><code>function()</code></td>
+                            <td><code>undefined</code></td>
+                            <td>Called when reset button is clicked</td>
+                        </tr>
+                        <tr>
+                            <td><code>accept</code></td>
+                            <td><code>string</code></td>
+                            <td><code>'image/*'</code></td>
+                            <td>Accepted file types for file picker</td>
+                        </tr>
+                        <tr>
+                            <td><code>disabled</code></td>
+                            <td><code>boolean</code></td>
+                            <td><code>false</code></td>
+                            <td>Disable the component</td>
+                        </tr>
+                        <tr>
+                            <td><code>className</code></td>
+                            <td><code>string</code></td>
+                            <td><code>''</code></td>
+                            <td>Additional CSS classes</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="code-example">
+                    <h4>React JSX</h4>
+                    <pre><code>&lt;ImageReplacer
+  imageSrc={currentImage}
+  fileName={currentFileName}
+  onImageChange={(file, previewUrl) => {
+    console.log('New image:', file.name);
+    setCurrentImage(previewUrl);
+    setCurrentFileName(file.name);
+  }}
+  onReset={() => {
+    setCurrentImage('');
+    setCurrentFileName('');
+  }}
+  accept="image/png,image/jpeg"
+/&gt;</code></pre>
+                </div>
+
+                <div class="token-usage">
+                    <h4>CSS Variables Used</h4>
+                    <ul>
+                        <li>--surface-ground, --surface-below (background colors)</li>
+                        <li>--content-primary, --content-secondary (text colors)</li>
+                        <li>--inner-shadow, --inner-side-shadow (inner shadows)</li>
+                        <li>--outer-bottom-light (bevel effect)</li>
+                        <li>--spacing-300 (gaps and padding)</li>
+                        <li>--radius-sm (border-radius)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Navbar Component - Interactive React Demo -->
+            <div class="component-showcase" id="section-navbar">
+                <h3>Navbar (Molecule)</h3>
+                <p class="component-description">A navigation bar component with double-layer container structure. Combines ImageReplacer (left), SegmentedControl (center), and Button (right) in a 54px height bar with offset positioning. Features elevated shadow effects and responsive layout. Extracted directly from Figma with 1:1 fidelity.</p>
+                
+                <!-- React Interactive Demo -->
+                <div id="navbar-demo-root"></div>
+
+                <table class="props-table">
+                    <thead>
+                        <tr>
+                            <th>Prop</th>
+                            <th>Type</th>
+                            <th>Default</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>imageSrc</code></td>
+                            <td><code>string</code></td>
+                            <td><code>''</code></td>
+                            <td>Image source for ImageReplacer</td>
+                        </tr>
+                        <tr>
+                            <td><code>fileName</code></td>
+                            <td><code>string</code></td>
+                            <td><code>'img_name.jpg'</code></td>
+                            <td>Filename for ImageReplacer</td>
+                        </tr>
+                        <tr>
+                            <td><code>onImageChange</code></td>
+                            <td><code>function(file, previewUrl)</code></td>
+                            <td><code>undefined</code></td>
+                            <td>Called when image changes</td>
+                        </tr>
+                        <tr>
+                            <td><code>onImageReset</code></td>
+                            <td><code>function()</code></td>
+                            <td><code>undefined</code></td>
+                            <td>Called when image is reset</td>
+                        </tr>
+                        <tr>
+                            <td><code>selectedView</code></td>
+                            <td><code>'grid' | 'free' | 'palette'</code></td>
+                            <td><code>'grid'</code></td>
+                            <td>Selected view in SegmentedControl</td>
+                        </tr>
+                        <tr>
+                            <td><code>onViewChange</code></td>
+                            <td><code>function(value)</code></td>
+                            <td><code>undefined</code></td>
+                            <td>Called when view changes</td>
+                        </tr>
+                        <tr>
+                            <td><code>onExport</code></td>
+                            <td><code>function()</code></td>
+                            <td><code>undefined</code></td>
+                            <td>Called when export button is clicked</td>
+                        </tr>
+                        <tr>
+                            <td><code>disabled</code></td>
+                            <td><code>boolean</code></td>
+                            <td><code>false</code></td>
+                            <td>Disable the entire navbar</td>
+                        </tr>
+                        <tr>
+                            <td><code>className</code></td>
+                            <td><code>string</code></td>
+                            <td><code>''</code></td>
+                            <td>Additional CSS classes</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="code-example">
+                    <h4>React JSX</h4>
+                    <pre><code>&lt;Navbar
+  imageSrc={currentImage}
+  fileName={currentFileName}
+  onImageChange={(file, url) => {
+    setCurrentImage(url);
+    setCurrentFileName(file.name);
+  }}
+  onImageReset={() => {
+    setCurrentImage('');
+    setCurrentFileName('');
+  }}
+  selectedView={view}
+  onViewChange={setView}
+  onExport={() => console.log('Exporting...')}
+/&gt;</code></pre>
+                </div>
+
+                <div class="token-usage">
+                    <h4>CSS Variables Used</h4>
+                    <ul>
+                        <li>--surface-ground (main background)</li>
+                        <li>--inner-shadow, --inner-top-light (inner shadows)</li>
+                        <li>--spacing-300 (gaps and padding)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- TextField Component - Interactive React Demo -->
+            <div class="component-showcase" id="section-textfield">
+                <h3>Text Field</h3>
+                <p class="component-description">Text input field with optional icons and multiple states (default, focused, error, disabled). Extracted directly from Figma with 1:1 fidelity. Integrated with Slider component for editable numeric input.</p>
+                
+                <!-- React Interactive Demo -->
+                <div id="textfield-demo-root"></div>
+
+                <table class="props-table">
+                    <thead>
+                        <tr>
+                            <th>Prop</th>
+                            <th>Type</th>
+                            <th>Default</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>value</code></td>
+                            <td><code>string</code></td>
+                            <td><code>''</code></td>
+                            <td>Current value</td>
+                        </tr>
+                        <tr>
+                            <td><code>onChange</code></td>
+                            <td><code>function(value)</code></td>
+                            <td><code>undefined</code></td>
+                            <td>Called when value changes</td>
+                        </tr>
+                        <tr>
+                            <td><code>onBlur</code></td>
+                            <td><code>function(e)</code></td>
+                            <td><code>undefined</code></td>
+                            <td>Called when input loses focus</td>
+                        </tr>
+                        <tr>
+                            <td><code>placeholder</code></td>
+                            <td><code>string</code></td>
+                            <td><code>''</code></td>
+                            <td>Placeholder text</td>
+                        </tr>
+                        <tr>
+                            <td><code>type</code></td>
+                            <td><code>'text' | 'number' | 'email' | 'password'</code></td>
+                            <td><code>'text'</code></td>
+                            <td>Input type</td>
+                        </tr>
+                        <tr>
+                            <td><code>iconBefore</code></td>
+                            <td><code>boolean | ReactNode</code></td>
+                            <td><code>false</code></td>
+                            <td>Icon before text (true for default icon)</td>
+                        </tr>
+                        <tr>
+                            <td><code>iconAfter</code></td>
+                            <td><code>boolean | ReactNode</code></td>
+                            <td><code>false</code></td>
+                            <td>Icon after text (true for default icon)</td>
+                        </tr>
+                        <tr>
+                            <td><code>disabled</code></td>
+                            <td><code>boolean</code></td>
+                            <td><code>false</code></td>
+                            <td>Whether the field is disabled</td>
+                        </tr>
+                        <tr>
+                            <td><code>error</code></td>
+                            <td><code>boolean | string</code></td>
+                            <td><code>false</code></td>
+                            <td>Error state or error message</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="code-example">
+                    <h4>React JSX</h4>
+                    <pre><code>&lt;TextField 
+  value={textValue}
+  onChange={(value) => setTextValue(value)}
+  placeholder="Enter text..."
+  type="text"
+  iconBefore={true}
+/&gt;</code></pre>
+                </div>
+
+                <div class="token-usage">
+                    <h4>CSS Variables Used</h4>
+                    <ul>
+                        <li>--surface-below (outer container background)</li>
+                        <li>--surface-above (inner container background)</li>
+                        <li>--content-primary (text color)</li>
+                        <li>--content-secondary (placeholder color)</li>
+                        <li>--inner-shadow, --inner-side-shadow (inset shadows)</li>
+                        <li>--outer-bottom-light (bevel effect)</li>
+                        <li>--spacing-025 (1px outer padding)</li>
+                        <li>--spacing-150, --spacing-200 (inner padding & gaps)</li>
+                        <li>--radius-sm (border-radius)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Select Component - Interactive React Demo -->
+            <div class="component-showcase" id="section-select">
+                <h3>Select</h3>
+                <p class="component-description">Dropdown select control with optional icons and multiple states. Extracted directly from Figma with 1:1 fidelity. Shares styling with outline button variant.</p>
+                
+                <!-- React Interactive Demo -->
+                <div id="select-demo-root"></div>
+
+                <table class="props-table">
+                    <thead>
+                        <tr>
+                            <th>Prop</th>
+                            <th>Type</th>
+                            <th>Default</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>value</code></td>
+                            <td><code>string</code></td>
+                            <td><code>''</code></td>
+                            <td>Current selected value</td>
+                        </tr>
+                        <tr>
+                            <td><code>onChange</code></td>
+                            <td><code>function(value)</code></td>
+                            <td><code>undefined</code></td>
+                            <td>Called when selection changes</td>
+                        </tr>
+                        <tr>
+                            <td><code>options</code></td>
+                            <td><code>Array&lt;{value, label, icon?}&gt;</code></td>
+                            <td><code>[]</code></td>
+                            <td>Available options</td>
+                        </tr>
+                        <tr>
+                            <td><code>placeholder</code></td>
+                            <td><code>string</code></td>
+                            <td><code>'Select...'</code></td>
+                            <td>Placeholder text when no value selected</td>
+                        </tr>
+                        <tr>
+                            <td><code>icon</code></td>
+                            <td><code>boolean | ReactNode</code></td>
+                            <td><code>false</code></td>
+                            <td>Icon before label (true for default icon)</td>
+                        </tr>
+                        <tr>
+                            <td><code>iconDynamic</code></td>
+                            <td><code>boolean</code></td>
+                            <td><code>false</code></td>
+                            <td>If true, icon changes based on selected option</td>
+                        </tr>
+                        <tr>
+                            <td><code>disabled</code></td>
+                            <td><code>boolean</code></td>
+                            <td><code>false</code></td>
+                            <td>Whether the select is disabled</td>
+                        </tr>
+                        <tr>
+                            <td><code>fullWidth</code></td>
+                            <td><code>boolean</code></td>
+                            <td><code>false</code></td>
+                            <td>Whether the select takes full width</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="code-example">
+                    <h4>React JSX</h4>
+                    <pre><code>&lt;Select 
+  value={selectedValue}
+  onChange={(value) => setSelectedValue(value)}
+  options={[
+    { value: 'option1', label: 'Option 1' },
+    { value: 'option2', label: 'Option 2' }
+  ]}
+  placeholder="Choose an option..."
+  icon={true}
+/&gt;</code></pre>
+                </div>
+
+                <div class="token-usage">
+                    <h4>CSS Variables Used</h4>
+                    <ul>
+                        <li>--surface-profound (outer container background)</li>
+                        <li>--surface-ground (inner container background)</li>
+                        <li>--surface-below (hover state)</li>
+                        <li>--content-primary (text color)</li>
+                        <li>--content-secondary (placeholder color)</li>
+                        <li>--inner-shadow, --inner-side-shadow, --inner-top-light (inset shadows)</li>
+                        <li>--outer-bottom-light (bevel effect)</li>
+                        <li>--spacing-025 (1px outer padding)</li>
+                        <li>--spacing-150, --spacing-200 (inner padding & gaps)</li>
+                        <li>--radius-sm, --radius-lg (border-radius)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Section Title Component - Interactive React Demo -->
+            <div class="component-showcase" id="section-section-title">
+                <h3>Section Title</h3>
+                <p class="component-description">Collapsible section header with debossed label and animated chevron. Secondary text at rest becomes primary on hover. Chevron rotates between down (opened) and right (closed) states with a spring transition.</p>
+                
+                <!-- React Interactive Demo -->
+                <div id="section-title-demo-root"></div>
+
+                <table class="props-table">
+                    <thead>
+                        <tr>
+                            <th>Prop</th>
+                            <th>Type</th>
+                            <th>Default</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>label</code></td>
+                            <td><code>string</code></td>
+                            <td><code>'Section title'</code></td>
+                            <td>Section name displayed</td>
+                        </tr>
+                        <tr>
+                            <td><code>defaultOpened</code></td>
+                            <td><code>boolean</code></td>
+                            <td><code>true</code></td>
+                            <td>Initial collapsed state</td>
+                        </tr>
+                        <tr>
+                            <td><code>onToggle</code></td>
+                            <td><code>fn(opened: boolean)</code></td>
+                            <td><code>undefined</code></td>
+                            <td>Called after toggling, receives new opened state</td>
+                        </tr>
+                        <tr>
+                            <td><code>className</code></td>
+                            <td><code>string</code></td>
+                            <td><code>''</code></td>
+                            <td>Additional CSS classes</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="code-example">
+                    <h4>React JSX</h4>
+                    <pre><code>&lt;SectionTitle
+  label="Canvas"
+  defaultOpened={true}
+  onToggle={(opened) =&gt; console.log(opened)}
+/&gt;</code></pre>
+                </div>
+
+                <div class="token-usage">
+                    <h4>CSS Variables Used</h4>
+                    <ul>
+                        <li>--content-secondary (label rest color)</li>
+                        <li>--content-primary (label hover color)</li>
+                        <li>--outer-bottom-light (debossed text-shadow &amp; icon drop-shadow)</li>
+                        <li>--spacing-200 (8px gap between label &amp; chevron)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Label Component -->
+            <div class="component-showcase" id="section-labels">
+                <h3>Labels & Text</h3>
+                <p class="component-description">Text styles for section labels, hints, and file information.</p>
+                
+                <div class="variant-group">
+                    <h4>Variants</h4>
+                    <div class="variant-examples" style="display: block;">
+                        <label class="section-label" style="display: block; margin-bottom: var(--spacing-200);">Section Label</label>
+                        <p class="hint-text" style="margin-bottom: var(--spacing-200);">Hint text for additional context</p>
+                        <div class="file-info visible">filename_example.jpg</div>
+                    </div>
+                </div>
+
+                <table class="props-table">
+                    <thead>
+                        <tr>
+                            <th>Class</th>
+                            <th>Font Size</th>
+                            <th>Color</th>
+                            <th>Use Case</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>section-label</code></td>
+                            <td><code>14px</code></td>
+                            <td><code>content-primary</code></td>
+                            <td>Labels for form sections and controls</td>
+                        </tr>
+                        <tr>
+                            <td><code>hint-text</code></td>
+                            <td><code>14px</code></td>
+                            <td><code>content-secondary</code></td>
+                            <td>Supporting hints and instructions</td>
+                        </tr>
+                        <tr>
+                            <td><code>file-info</code></td>
+                            <td><code>14px</code></td>
+                            <td><code>content-secondary</code></td>
+                            <td>File names and metadata display</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="code-example">
+                    <h4>HTML</h4>
+                    <pre><code>&lt;label class="section-label"&gt;Label Text&lt;/label&gt;
+&lt;p class="hint-text"&gt;Hint or instruction text&lt;/p&gt;
+&lt;div class="file-info visible"&gt;filename.jpg&lt;/div&gt;</code></pre>
+                </div>
+
+                <div class="token-usage">
+                    <h4>CSS Variables Used</h4>
+                    <ul>
+                        <li>--content-primary (section-label)</li>
+                        <li>--content-secondary (hint-text, file-info)</li>
+                        <li>--spacing-200 (margin/spacing)</li>
+                    </ul>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- Usage Guidelines -->
+        <section class="ds-section" id="section-guidelines">
+            <h2 class="ds-section-title">Usage Guidelines</h2>
+            
+            <div class="ds-subsection">
+                <h3 class="ds-subsection-title">Button Usage</h3>
+                <p class="usage-text">Use action buttons for primary and secondary actions. Include icons for visual reinforcement of the action. Full-width buttons work best in narrow containers like sidebars.</p>
+            </div>
+            
+            <div class="ds-subsection">
+                <h3 class="ds-subsection-title">Segmented Control Usage</h3>
+                <p class="usage-text">Use segmented controls for mutually exclusive options with 2-4 choices. For binary choices (like Fill/Fit), use 2 segments. The active state provides clear visual feedback.</p>
+            </div>
+            
+            <div class="ds-subsection">
+                <h3 class="ds-subsection-title">Slider Usage</h3>
+                <p class="usage-text">Sliders are ideal for numeric inputs with a defined range. Always display the current value next to the slider. For percentage values, append the % symbol.</p>
+            </div>
+            
+            <div class="ds-subsection">
+                <h3 class="ds-subsection-title">Color Modes</h3>
+                <p class="usage-text">All components automatically adapt to Light and Dark mode based on the user's system preference. Test components in both modes to ensure proper contrast and readability.</p>
+            </div>
+        </section>
+    </div>
+    </div><!-- end ds-layout -->
+
+    <script>
+        // Apply saved theme preference immediately (before React renders)
+        const savedMode = localStorage.getItem('designSystemMode') || 'light';
+        if (savedMode === 'dark') {
+            document.documentElement.classList.add('dark-mode');
+            document.documentElement.classList.remove('light-mode');
+        } else {
+            document.documentElement.classList.add('light-mode');
+            document.documentElement.classList.remove('dark-mode');
+        }
+
+        // Sidebar navigation: smooth scroll + active section tracking
+        document.addEventListener('DOMContentLoaded', () => {
+            const sidebar = document.getElementById('ds-sidebar');
+            if (!sidebar) return;
+
+            const links = sidebar.querySelectorAll('a[data-section]');
+            const sections = [];
+
+            links.forEach(link => {
+                const id = link.getAttribute('data-section');
+                const el = document.getElementById(id);
+                if (el) sections.push({ id, el, link });
+            });
+
+            // Smooth scroll on click
+            links.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const id = link.getAttribute('data-section');
+                    const target = document.getElementById(id);
+                    if (target) {
+                        const navbarHeight = 54;
+                        const offset = target.getBoundingClientRect().top + window.scrollY - navbarHeight - 16;
+                        window.scrollTo({ top: offset, behavior: 'smooth' });
+                    }
+                });
+            });
+
+            // Track scroll position to highlight active section
+            let ticking = false;
+            const updateActiveSection = () => {
+                const navbarHeight = 54;
+                const scrollPos = window.scrollY + navbarHeight + 40;
+
+                let activeSection = sections[0];
+                for (const section of sections) {
+                    if (section.el.offsetTop <= scrollPos) {
+                        activeSection = section;
+                    }
+                }
+
+                links.forEach(link => link.classList.remove('active'));
+                if (activeSection) {
+                    activeSection.link.classList.add('active');
+                    // Also highlight parent heading if it's a sub-link
+                    const parentGroup = activeSection.link.closest('.ds-sidebar-group');
+                    if (parentGroup) {
+                        const heading = parentGroup.querySelector('.ds-sidebar-heading');
+                        if (heading) heading.classList.add('active');
+                    }
+                }
+                ticking = false;
+            };
+
+            window.addEventListener('scroll', () => {
+                if (!ticking) {
+                    requestAnimationFrame(updateActiveSection);
+                    ticking = true;
+                }
+            });
+
+            // Initial update
+            updateActiveSection();
+        });
+    </script>
+
+    <!-- TextField Component Definition (used by all demos) -->
+    <script type="text/babel">
+        // TextField Component (from Figma — 2-layer debossed design)
+        const TextField = ({ 
+          value = '',
+          onChange,
+          onBlur,
+          placeholder = '',
+          type = 'text',
+          iconBefore = false,
+          iconAfter = false,
+          suffix = '',
+          disabled = false,
+          error = false,
+          className = ''
+        }) => {
+          const [isFocused, setIsFocused] = React.useState(false);
+
+          // Default icon component (dice icon) - using Icons/dice.svg
+          const DefaultIcon = () => (
+            <img src="Icons/dice.svg" alt="" width="16" height="16" style={{display: 'block'}} />
+          );
+
+          const renderIcon = (icon) => {
+            if (icon === true) return <DefaultIcon />;
+            if (icon === false || !icon) return null;
+            return icon;
+          };
+
+          const handleChange = (e) => {
+            if (!disabled && onChange) {
+              onChange(e.target.value);
+            }
+          };
+
+          const handleFocus = () => {
+            setIsFocused(true);
+          };
+
+          const handleKeyDown = (e) => {
+            if (e.key === 'Enter') {
+              e.target.blur();
+            }
+          };
+
+          const handleBlur = (e) => {
+            setIsFocused(false);
+            if (onBlur) {
+              onBlur(e);
+            }
+          };
+
+          return (
+            <div className={`text-field-component ${disabled ? 'disabled' : ''} ${error ? 'error' : ''} ${isFocused ? 'focused' : ''} ${className}`}>
+              <div className="text-field-container">
+                <div className="text-field-inner">
+                  {iconBefore && (
+                    <div className="text-field-icon">
+                      {renderIcon(iconBefore)}
+                    </div>
+                  )}
+                  <input
+                    type={type}
+                    value={value}
+                    onChange={handleChange}
+                    onFocus={handleFocus}
+                    onBlur={handleBlur}
+                    onKeyDown={handleKeyDown}
+                    placeholder={placeholder}
+                    disabled={disabled}
+                    className="text-field-input"
+                  />
+                  {suffix && (
+                    <span className="text-field-suffix">{suffix}</span>
+                  )}
+                  {iconAfter && (
+                    <div className="text-field-icon">
+                      {renderIcon(iconAfter)}
+                    </div>
+                  )}
+                </div>
+                <div className="text-field-shadow-overlay"></div>
+              </div>
+              {error && typeof error === 'string' && (
+                <div className="text-field-error-message">{error}</div>
+              )}
+            </div>
+          );
+        };
+        
+        // Make TextField globally available
+        window.TextField = TextField;
+    </script>
+
+    <!-- Select Component Definition (used by all demos) -->
+    <script type="text/babel">
+        // Select Component (from Figma)
+        const Select = ({ 
+          value = '',
+          onChange,
+          options = [],
+          placeholder = 'Select...',
+          icon = false,
+          iconDynamic = false,
+          iconOnly = false,
+          disabled = false,
+          fullWidth = false,
+          className = ''
+        }) => {
+          const selectRef = React.useRef(null);
+
+          // Default icon component (dice icon) - using Icons/dice.svg
+          const DefaultIcon = () => (
+            <img src="Icons/dice.svg" alt="" width="16" height="16" style={{display: 'block'}} />
+          );
+
+          // Select dropdown indicator icon - using Icons/select.svg
+          const SelectIndicator = () => (
+            <img src="Icons/select.svg" alt="" width="16" height="16" style={{display: 'block'}} />
+          );
+
+          const renderIcon = (iconProp) => {
+            if (iconProp === true) return <DefaultIcon />;
+            if (iconProp === false || !iconProp) return null;
+            return iconProp;
+          };
+
+          // Get the currently selected option
+          const selectedOption = options.find(opt => opt.value === value);
+          const displayLabel = selectedOption ? (selectedOption.displayLabel || selectedOption.label) : placeholder;
+          const isPlaceholder = !selectedOption;
+          
+          // Determine which icon to show
+          const displayIcon = iconDynamic && selectedOption?.icon 
+            ? selectedOption.icon 
+            : icon;
+
+          const handleSelectChange = (e) => {
+            if (!disabled && onChange) {
+              onChange(e.target.value);
+            }
+          };
+
+          return (
+            <div className={`select-component ${fullWidth ? 'full-width' : ''} ${iconOnly ? 'icon-only' : ''} ${disabled ? 'disabled' : ''} ${className}`}>
+              <div className="select-outer">
+                <div className="select-inner">
+                  {displayIcon && (
+                    <span className="select-icon">
+                      {renderIcon(displayIcon)}
+                    </span>
+                  )}
+                  {!iconOnly && (
+                    <span className={`select-label ${isPlaceholder ? 'placeholder' : ''}`}>
+                      {displayLabel}
+                    </span>
+                  )}
+                  {!iconOnly && (
+                    <span className="select-icon">
+                      <SelectIndicator />
+                    </span>
+                  )}
+                </div>
+              </div>
+              
+              {/* Native select element (hidden but functional) */}
+              <select
+                ref={selectRef}
+                value={value}
+                onChange={handleSelectChange}
+                disabled={disabled}
+                className="select-native"
+              >
+                {placeholder && !value && (
+                  <option value="" disabled>{placeholder}</option>
+                )}
+                {options.map(option => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          );
+        };
+        
+        // Make Select globally available
+        window.Select = Select;
+    </script>
+
+    <!-- Control Component Definition (used by all demos) -->
+    <script type="text/babel">
+        // Control Component (Molecule from Figma)
+        const Control = ({ 
+          label = 'Label',
+          description = '',
+          helperText = '',
+          children,
+          className = ''
+        }) => {
+          return (
+            <div className={`control-component ${className}`}>
+              {/* Centered label row with corner bracket decorations */}
+              <div className="control-label-row">
+                {/* Left half: spacer | bracket column */}
+                <div className="control-label-half control-label-half-left">
+                  <div className="control-label-spacer" />
+                  <div className="control-label-bracket">
+                    <div className="control-label-bracket-top" />
+                    <div className="control-label-bracket-bottom" />
+                  </div>
+                </div>
+                {/* Right half: bracket column | spacer */}
+                <div className="control-label-half control-label-half-right">
+                  <div className="control-label-bracket">
+                    <div className="control-label-bracket-top" />
+                    <div className="control-label-bracket-bottom" />
+                  </div>
+                  <div className="control-label-spacer" />
+                </div>
+                {/* Label text — absolutely centered, masks brackets behind it */}
+                <span className="control-label-text">{label}</span>
+              </div>
+
+              {/* Control content area */}
+              <div className="control-content">
+                {children}
+              </div>
+
+              {/* Description (below control) */}
+              {description && (
+                <div className="control-description">
+                  {description}
+                </div>
+              )}
+
+              {/* Helper text */}
+              {helperText && (
+                <div className="control-helper-text">
+                  {helperText}
+                </div>
+              )}
+            </div>
+          );
+        };
+        
+        // Make Control globally available
+        window.Control = Control;
+    </script>
+
+    <!-- ImageReplacer Component Definition (used by all demos) -->
+    <script type="text/babel">
+        // ImageReplacer Component (from Figma)
+        const ImageReplacer = ({ 
+          imageSrc = '',
+          fileName = 'No image selected',
+          onImageChange,
+          onReset,
+          accept = 'image/*',
+          disabled = false,
+          className = ''
+        }) => {
+          const [isHovered, setIsHovered] = React.useState(false);
+          const [currentImage, setCurrentImage] = React.useState(imageSrc);
+          const [currentFileName, setCurrentFileName] = React.useState(fileName);
+          const fileInputRef = React.useRef(null);
+
+          // Update internal state when props change
+          React.useEffect(() => {
+            setCurrentImage(imageSrc);
+          }, [imageSrc]);
+
+          React.useEffect(() => {
+            setCurrentFileName(fileName);
+          }, [fileName]);
+
+          // Truncate filename to 32 characters
+          const truncateFileName = (name) => {
+            if (!name) return 'No image selected';
+            if (name.length <= 32) return name;
+            
+            // Try to preserve extension
+            const lastDot = name.lastIndexOf('.');
+            if (lastDot > 0 && name.length - lastDot <= 5) {
+              const ext = name.substring(lastDot);
+              const nameWithoutExt = name.substring(0, lastDot);
+              const truncated = nameWithoutExt.substring(0, 32 - ext.length - 3);
+              return `${truncated}...${ext}`;
+            }
+            
+            return name.substring(0, 29) + '...';
+          };
+
+          // Reset icon component - using Icons/reset.svg
+          const ResetIcon = () => (
+            <img src="Icons/reset.svg" alt="" width="16" height="16" style={{display: 'block'}} />
+          );
+
+          const handleClick = () => {
+            if (!disabled && fileInputRef.current) {
+              fileInputRef.current.click();
+            }
+          };
+
+          const handleFileChange = (e) => {
+            const file = e.target.files?.[0];
+            if (!file) return;
+
+            // Create preview URL
+            const previewUrl = URL.createObjectURL(file);
+            
+            // Update internal state
+            setCurrentImage(previewUrl);
+            setCurrentFileName(file.name);
+
+            // Call parent callback
+            if (onImageChange) {
+              onImageChange(file, previewUrl);
+            }
+
+            // Reset input to allow selecting the same file again
+            e.target.value = '';
+          };
+
+          const handleReset = (e) => {
+            e.stopPropagation();
+            
+            setCurrentImage('');
+            setCurrentFileName('No image selected');
+            
+            if (onReset) {
+              onReset();
+            }
+          };
+
+          return (
+            <div 
+              className={`image-replacer ${isHovered ? 'hover' : ''} ${disabled ? 'disabled' : ''} ${className}`}
+              onMouseEnter={() => !disabled && setIsHovered(true)}
+              onMouseLeave={() => setIsHovered(false)}
+              onClick={handleClick}
+            >
+              {/* Hidden file input */}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept={accept}
+                onChange={handleFileChange}
+                disabled={disabled}
+                style={{ display: 'none' }}
+                aria-label="Upload image"
+              />
+
+              {/* Thumbnail */}
+              <div className="image-replacer-thumbnail">
+                {currentImage ? (
+                  <img 
+                    src={currentImage} 
+                    alt={currentFileName}
+                    className="image-replacer-image"
+                  />
+                ) : (
+                  <div className="image-replacer-placeholder">
+                    <img src="Icons/img.svg" alt="" width="20" height="20" style={{display: 'block'}} />
+                  </div>
+                )}
+                <div className="image-replacer-thumbnail-shadow"></div>
+              </div>
+
+              {/* Filename */}
+              <div className="image-replacer-filename">
+                {truncateFileName(currentFileName)}
+              </div>
+
+              {/* Reset button */}
+              {currentImage && (
+                <button
+                  className="image-replacer-reset"
+                  onClick={handleReset}
+                  disabled={disabled}
+                  type="button"
+                  aria-label="Reset image"
+                >
+                  <ResetIcon />
+                </button>
+              )}
+
+              {/* Hover overlay */}
+              {isHovered && <div className="image-replacer-hover-overlay"></div>}
+            </div>
+          );
+        };
+        
+        // Make ImageReplacer globally available
+        window.ImageReplacer = ImageReplacer;
+    </script>
+
+    <!-- Navbar Component Definition (used by all demos) -->
+    <script type="text/babel">
+        // Navbar Component (from Figma)
+        const Navbar = ({ 
+          imageSrc = '',
+          fileName = 'img_name.jpg',
+          onImageChange,
+          onImageReset,
+          selectedView = 'grid',
+          onViewChange,
+          onExport,
+          disabled = false,
+          className = ''
+        }) => {
+          // Get components from global scope
+          const ImageReplacerComponent = window.ImageReplacer;
+          const SegmentedControlComponent = window.SegmentedControl;
+          const ButtonComponent = window.Button;
+
+
+          return (
+            <div className={`navbar-component ${disabled ? 'disabled' : ''} ${className}`}>
+              {/* Outer container */}
+              <div className="navbar-outer">
+                {/* Inner container */}
+                <div className="navbar-inner">
+                  {/* Left: ImageReplacer */}
+                  <div className="navbar-left">
+                    <ImageReplacerComponent
+                      imageSrc={imageSrc}
+                      fileName={fileName}
+                      onImageChange={onImageChange}
+                      onReset={onImageReset}
+                      disabled={disabled}
+                    />
+                  </div>
+
+                  {/* Center: SegmentedControl */}
+                  <div className="navbar-center">
+                    <SegmentedControlComponent
+                      items={[
+                        { value: 'grid', label: 'Stretch' },
+                        { value: 'free', label: 'Scatter' },
+                        { value: 'palette', label: 'Stain' }
+                      ]}
+                      value={selectedView}
+                      onChange={onViewChange}
+                      disabled={disabled}
+                    />
+                  </div>
+
+                  {/* Right: Button */}
+                  <div className="navbar-right">
+                    <ButtonComponent
+                      variant="outline"
+                      label="Design system"
+                      onClick={onExport}
+                      disabled={disabled}
+                    />
+                  </div>
+
+                  {/* Inner shadow overlay */}
+                  <div className="navbar-inner-shadow"></div>
+                </div>
+              </div>
+            </div>
+          );
+        };
+        
+        // Make Navbar globally available
+        window.Navbar = Navbar;
+    </script>
+
+    <!-- Button Component React Demo -->
+    <script type="text/babel">
+        const { useState } = React;
+        
+        // Get components from global scope for use in controls
+        const TextField = window.TextField;
+        const Select = window.Select;
+
+        // Button Component (3-layer design from Figma)
+        const Button = ({ 
+          variant = 'plain',
+          size = 'default',
+          iconBefore = false,
+          iconAfter = false,
+          label = 'Label',
+          onClick,
+          disabled = false,
+          fullWidth = false,
+          active = false,
+          className = ''
+        }) => {
+          // Default icon component (dice icon) - using Icons/dice.svg
+          const DefaultIcon = () => (
+            <img src="Icons/dice.svg" alt="" width="16" height="16" style={{display: 'block'}} />
+          );
+          
+          const renderIcon = (icon) => {
+            if (icon === true) return <DefaultIcon />;
+            if (icon === false) return null;
+            return icon;
+          };
+
+          return (
+            <button
+              className={`button-component ${size === 'large' ? 'large' : ''} ${fullWidth ? 'full-width' : ''} ${active ? 'active' : ''} ${className}`}
+              onClick={onClick}
+              disabled={disabled}
+              type="button"
+            >
+              <div className="button-outer">
+                <div className="button-inner">
+                  {iconBefore && <span className="button-icon">{renderIcon(iconBefore)}</span>}
+                  {label && <span className="button-label">{label}</span>}
+                  {iconAfter && <span className="button-icon">{renderIcon(iconAfter)}</span>}
+                </div>
+              </div>
+            </button>
+          );
+        };
+
+        // Interactive Demo Component
+        const ButtonDemo = () => {
+          const [variant, setVariant] = useState('plain');
+          const [label, setLabel] = useState('Label');
+          const [iconBefore, setIconBefore] = useState(false);
+          const [iconAfter, setIconAfter] = useState(false);
+          const [disabled, setDisabled] = useState(false);
+          const [fullWidth, setFullWidth] = useState(false);
+
+          return (
+            <div>
+              <div className="variant-group">
+                <h4>Interactive Preview</h4>
+                <div className="variant-examples" style={{ display: 'flex', justifyContent: 'center', padding: '32px' }}>
+                  <Button
+                    variant={variant}
+                    label={label}
+                    iconBefore={iconBefore}
+                    iconAfter={iconAfter}
+                    disabled={disabled}
+                    fullWidth={fullWidth}
+                    onClick={() => alert('Button clicked!')}
+                  />
+                </div>
+              </div>
+
+              <div className="variant-group">
+                <h4>Controls</h4>
+                <div style={{ 
+                  display: 'grid', 
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
+                  gap: 'var(--spacing-400)',
+                  padding: 'var(--spacing-600)',
+                  background: 'var(--surface-below)',
+                  borderRadius: 'var(--radius-lg)'
+                }}>
+                  <div className="sidebar-section">
+                    <label className="section-label">Variant</label>
+                    <Select
+                      value={variant}
+                      onChange={setVariant}
+                      options={[
+                        { value: 'plain', label: 'Plain' },
+                        { value: 'outline', label: 'Outline' }
+                      ]}
+                    />
+                  </div>
+
+                  <div className="sidebar-section">
+                    <label className="section-label">Label</label>
+                    <TextField
+                      type="text"
+                      value={label}
+                      onChange={setLabel}
+                      placeholder="Button label"
+                    />
+                  </div>
+
+                  <div className="sidebar-section">
+                    <label className="section-label">
+                      <input 
+                        type="checkbox"
+                        checked={iconBefore}
+                        onChange={(e) => setIconBefore(e.target.checked)}
+                        style={{ marginRight: '8px' }}
+                      />
+                      Icon Before
+                    </label>
+                  </div>
+
+                  <div className="sidebar-section">
+                    <label className="section-label">
+                      <input 
+                        type="checkbox"
+                        checked={iconAfter}
+                        onChange={(e) => setIconAfter(e.target.checked)}
+                        style={{ marginRight: '8px' }}
+                      />
+                      Icon After
+                    </label>
+                  </div>
+
+                  <div className="sidebar-section">
+                    <label className="section-label">
+                      <input 
+                        type="checkbox"
+                        checked={disabled}
+                        onChange={(e) => setDisabled(e.target.checked)}
+                        style={{ marginRight: '8px' }}
+                      />
+                      Disabled
+                    </label>
+                  </div>
+
+                  <div className="sidebar-section">
+                    <label className="section-label">
+                      <input 
+                        type="checkbox"
+                        checked={fullWidth}
+                        onChange={(e) => setFullWidth(e.target.checked)}
+                        style={{ marginRight: '8px' }}
+                      />
+                      Full Width
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <div className="variant-group">
+                <h4>All Variations</h4>
+                <div className="variant-examples">
+                  <Button label="Default" />
+                  <Button label="With Icon" iconBefore={true} />
+                  <Button label="Both Icons" iconBefore={true} iconAfter={true} />
+                  <Button label="Icon Only" iconBefore={true} label="" />
+                  <Button label="Disabled" disabled={true} />
+                  <Button label="Active" active={true} />
+                  <Button label="Large" size="large" />
+                  <Button label="Large + Icon" size="large" iconBefore={true} />
+                </div>
+              </div>
+            </div>
+          );
+        };
+
+        // Render the demo
+        const root = ReactDOM.createRoot(document.getElementById('button-demo-root'));
+        root.render(<ButtonDemo />);
+    </script>
+
+    <!-- Select Component React Demo -->
+    <script type="text/babel">
+        const { useState } = React;
+        
+        // Get Select from global scope
+        const Select = window.Select;
+
+        // Interactive Demo Component
+        const SelectDemo = () => {
+          const [selectedValue, setSelectedValue] = useState('option2');
+          const [hasIcon, setHasIcon] = useState(true);
+          const [iconDynamic, setIconDynamic] = useState(false);
+          const [disabled, setDisabled] = useState(false);
+          const [fullWidth, setFullWidth] = useState(false);
+          const [placeholder, setPlaceholder] = useState('Choose an option...');
+
+          const options = [
+            { value: 'option1', label: 'Option 1' },
+            { value: 'option2', label: 'Option 2' },
+            { value: 'option3', label: 'Option 3' },
+            { value: 'option4', label: 'Option 4' }
+          ];
+
+          return (
+            <div>
+              <div className="variant-group">
+                <h4>Interactive Preview</h4>
+                <div className="variant-examples" style={{ display: 'flex', justifyContent: 'center', padding: '32px' }}>
+                  <Select
+                    value={selectedValue}
+                    onChange={setSelectedValue}
+                    options={options}
+                    placeholder={placeholder}
+                    icon={hasIcon}
+                    iconDynamic={iconDynamic}
+                    disabled={disabled}
+                    fullWidth={fullWidth}
+                  />
+                </div>
+                <p style={{ textAlign: 'center', fontSize: '14px', color: 'var(--content-secondary)', marginTop: '16px' }}>
+                  Selected: <strong>{selectedValue || '(none)'}</strong>
+                </p>
+              </div>
+
+              <div className="variant-group">
+                <h4>Controls</h4>
+                <div style={{ 
+                  display: 'grid', 
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
+                  gap: 'var(--spacing-400)',
+                  padding: 'var(--spacing-600)',
+                  background: 'var(--surface-below)',
+                  borderRadius: 'var(--radius-lg)'
+                }}>
+                  <div className="sidebar-section">
+                    <label className="section-label">
+                      <input 
+                        type="checkbox"
+                        checked={hasIcon}
+                        onChange={(e) => setHasIcon(e.target.checked)}
+                        style={{ marginRight: '8px' }}
+                      />
+                      Show Icon
+                    </label>
+                  </div>
+
+                  <div className="sidebar-section">
+                    <label className="section-label">
+                      <input 
+                        type="checkbox"
+                        checked={iconDynamic}
+                        onChange={(e) => setIconDynamic(e.target.checked)}
+                        style={{ marginRight: '8px' }}
+                      />
+                      Dynamic Icon
+                    </label>
+                  </div>
+
+                  <div className="sidebar-section">
+                    <label className="section-label">
+                      <input 
+                        type="checkbox"
+                        checked={disabled}
+                        onChange={(e) => setDisabled(e.target.checked)}
+                        style={{ marginRight: '8px' }}
+                      />
+                      Disabled
+                    </label>
+                  </div>
+
+                  <div className="sidebar-section">
+                    <label className="section-label">
+                      <input 
+                        type="checkbox"
+                        checked={fullWidth}
+                        onChange={(e) => setFullWidth(e.target.checked)}
+                        style={{ marginRight: '8px' }}
+                      />
+                      Full Width
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <div className="variant-group">
+                <h4>Examples</h4>
+                <div className="variant-examples" style={{ flexDirection: 'column', gap: '24px', alignItems: 'flex-start' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-start' }}>
+                    <p style={{ fontSize: '13px', color: 'var(--content-secondary)', margin: 0 }}>Default (with icon)</p>
+                    <Select
+                      value={selectedValue}
+                      onChange={setSelectedValue}
+                      options={options}
+                      placeholder="Choose an option..."
+                      icon={true}
+                    />
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-start' }}>
+                    <p style={{ fontSize: '13px', color: 'var(--content-secondary)', margin: 0 }}>Without icon</p>
+                    <Select
+                      value={selectedValue}
+                      onChange={setSelectedValue}
+                      options={options}
+                      placeholder="Choose an option..."
+                      icon={false}
+                    />
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'stretch', width: '100%' }}>
+                    <p style={{ fontSize: '13px', color: 'var(--content-secondary)', margin: 0 }}>Full width</p>
+                    <Select
+                      value={selectedValue}
+                      onChange={setSelectedValue}
+                      options={options}
+                      placeholder="Choose an option..."
+                      icon={true}
+                      fullWidth={true}
+                    />
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-start' }}>
+                    <p style={{ fontSize: '13px', color: 'var(--content-secondary)', margin: 0 }}>Disabled state</p>
+                    <Select
+                      value="option3"
+                      onChange={() => {}}
+                      options={options}
+                      icon={true}
+                      disabled={true}
+                    />
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-start' }}>
+                    <p style={{ fontSize: '13px', color: 'var(--content-secondary)', margin: 0 }}>Placeholder state</p>
+                    <Select
+                      value=""
+                      onChange={setSelectedValue}
+                      options={options}
+                      placeholder="Select an option..."
+                      icon={true}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        };
+
+        // Render the demo
+        const selectRoot = ReactDOM.createRoot(document.getElementById('select-demo-root'));
+        selectRoot.render(<SelectDemo />);
+    </script>
+
+    <!-- Section Title Component React Demo -->
+    <script type="text/babel">
+        const { useState } = React;
+
+        // Inline SectionTitle for design-system demo
+        const SectionTitle = ({
+          label = 'Section title',
+          defaultOpened = true,
+          onToggle,
+          className = ''
+        }) => {
+          const [opened, setOpened] = useState(defaultOpened);
+
+          const handleClick = () => {
+            const next = !opened;
+            setOpened(next);
+            if (onToggle) onToggle(next);
+          };
+
+          const handleKeyDown = (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              handleClick();
+            }
+          };
+
+          const ChevronIcon = () => (
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path
+                d="M5.5 6.5H6.5V7.5H7.5V8.5H8.5V7.5H9.5V6.5H10.5V5.5H11.5V7.5H10.5V8.5H9.5V9.5H8.5V10.5H7.5V9.5H6.5V8.5H5.5V7.5H4.5V5.5H5.5V6.5Z"
+                fill="currentColor"
+              />
+            </svg>
+          );
+
+          return (
+            <div
+              className={`section-title-component ${opened ? 'opened' : 'closed'} ${className}`}
+              onClick={handleClick}
+              onKeyDown={handleKeyDown}
+              role="button"
+              tabIndex={0}
+              aria-expanded={opened}
+              aria-label={label}
+            >
+              <span className="section-title-label">{label}</span>
+              <div className="section-title-icon">
+                <ChevronIcon />
+              </div>
+            </div>
+          );
+        };
+
+        // Demo wrapper
+        const SectionTitleDemo = () => {
+          const [log, setLog] = useState([]);
+
+          const addLog = (label, opened) => {
+            setLog(prev => [`${label}: ${opened ? 'opened' : 'closed'}`, ...prev].slice(0, 5));
+          };
+
+          return (
+            <div>
+              <div className="variant-group">
+                <h4>Interactive Preview</h4>
+                <div className="variant-examples" style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '0',
+                  padding: '0',
+                  background: 'var(--surface-ground)',
+                  borderRadius: 'var(--radius-lg)',
+                  overflow: 'hidden'
+                }}>
+                  {/* Opened section */}
+                  <div style={{ padding: 'var(--spacing-300)' }}>
+                    <SectionTitle
+                      label="Canvas"
+                      defaultOpened={true}
+                      onToggle={(opened) => addLog('Canvas', opened)}
+                    />
+                  </div>
+
+                  <div style={{ height: '1px', background: 'var(--surface-below)' }} />
+
+                  {/* Closed section */}
+                  <div style={{ padding: 'var(--spacing-300)' }}>
+                    <SectionTitle
+                      label="Adjustments"
+                      defaultOpened={false}
+                      onToggle={(opened) => addLog('Adjustments', opened)}
+                    />
+                  </div>
+
+                  <div style={{ height: '1px', background: 'var(--surface-below)' }} />
+
+                  {/* Another opened section */}
+                  <div style={{ padding: 'var(--spacing-300)' }}>
+                    <SectionTitle
+                      label="Cells"
+                      defaultOpened={true}
+                      onToggle={(opened) => addLog('Cells', opened)}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {log.length > 0 && (
+                <div style={{ marginTop: 'var(--spacing-300)', fontSize: '12px', color: 'var(--content-secondary)' }}>
+                  <strong>Toggle log:</strong>{' '}
+                  {log.map((entry, i) => <span key={i} style={{ marginRight: '8px' }}>{entry}</span>)}
+                </div>
+              )}
+            </div>
+          );
+        };
+
+        const sectionTitleRoot = ReactDOM.createRoot(document.getElementById('section-title-demo-root'));
+        sectionTitleRoot.render(<SectionTitleDemo />);
+    </script>
+
+    <!-- Segmented Control Component React Demo -->
+    <script type="text/babel">
+        const { useState } = React;
+        
+        // Get components from global scope
+        const TextField = window.TextField;
+        const Select = window.Select;
+
+        // Segmented Control Component (from Figma)
+        // 3-layer design: Root (gradient) → Item outer (elevated) → Item inner (content)
+        const SegmentedControl = ({ 
+          items = [
+            { label: 'Option 1', value: 'option1' },
+            { label: 'Option 2', value: 'option2' }
+          ],
+          value,
+          onChange,
+          disabled = false,
+          fullWidth = false,
+          showDot = true,
+          className = ''
+        }) => {
+          // Default icon component (dice icon) - using Icons/dice.svg
+          const DefaultIcon = () => (
+            <img src="Icons/dice.svg" alt="" width="16" height="16" style={{display: 'block'}} />
+          );
+
+          const renderIcon = (icon) => {
+            if (icon === true) return <DefaultIcon />;
+            if (icon === false || !icon) return null;
+            return icon;
+          };
+
+          const [pressingActive, setPressingActive] = useState(false);
+
+          const handleItemClick = (itemValue) => {
+            if (!disabled && onChange) {
+              onChange(itemValue);
+            }
+          };
+
+          const getPositionClass = (index) => {
+            if (items.length === 1) return 'position-first';
+            if (index === 0) return 'position-first';
+            if (index === items.length - 1) return 'position-last';
+            return 'position-middle';
+          };
+
+          const getClipClass = (index) => {
+            if (value === items[index].value) return '';
+            const leftIsInactive = index > 0 && items[index - 1].value !== value;
+            const rightIsInactive = index < items.length - 1 && items[index + 1].value !== value;
+            if (leftIsInactive && rightIsInactive) return 'clip-both';
+            if (leftIsInactive) return 'clip-left';
+            if (rightIsInactive) return 'clip-right';
+            return '';
+          };
+
+          return (
+            <div 
+              className={`segmented-control ${fullWidth ? 'full-width' : ''} ${disabled ? 'disabled' : ''} ${pressingActive ? 'pressing-active' : ''} ${className}`}
+              role="radiogroup"
+              onMouseUp={() => setPressingActive(false)}
+              onMouseLeave={() => setPressingActive(false)}
+            >
+              {items.map((item, index) => {
+                const isActive = value === item.value;
+                const hasIconBefore = item.iconBefore !== undefined && item.iconBefore !== false;
+                const hasIconAfter = item.iconAfter !== undefined && item.iconAfter !== false;
+                const posClass = getPositionClass(index);
+                const clipClass = getClipClass(index);
+
+                return (
+                  <button
+                    key={item.value}
+                    className={`segmented-control-item ${isActive ? 'active' : ''} ${posClass} ${clipClass}`}
+                    onClick={() => handleItemClick(item.value)}
+                    onMouseDown={isActive ? () => setPressingActive(true) : undefined}
+                    disabled={disabled}
+                    type="button"
+                    role="radio"
+                    aria-checked={isActive}
+                  >
+                    <div className="sc-item-inner">
+                      {showDot && <span className="sc-active-dot" />}
+                      {hasIconBefore && (
+                        <span className="segmented-control-icon">
+                          {renderIcon(item.iconBefore)}
+                        </span>
+                      )}
+                      {item.label && (
+                        <span className="segmented-control-label">{item.label}</span>
+                      )}
+                      {hasIconAfter && (
+                        <span className="segmented-control-icon">
+                          {renderIcon(item.iconAfter)}
+                        </span>
+                      )}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          );
+        };
+
+        // Interactive Demo Component
+        const SegmentedControlDemo = () => {
+          const [selectedValue, setSelectedValue] = useState('option1');
+          const [numItems, setNumItems] = useState(2);
+          const [hasIcons, setHasIcons] = useState(false);
+          const [disabled, setDisabled] = useState(false);
+          const [fullWidth, setFullWidth] = useState(false);
+
+          // Generate items based on number
+          const generateItems = () => {
+            const itemLabels = ['Option 1', 'Option 2', 'Option 3', 'Option 4'];
+            const itemValues = ['option1', 'option2', 'option3', 'option4'];
+            
+            return Array.from({ length: numItems }, (_, i) => ({
+              label: itemLabels[i],
+              value: itemValues[i],
+              iconBefore: hasIcons ? true : false,
+              iconAfter: false
+            }));
+          };
+
+          const items = generateItems();
+
+          // Reset selected value if it's not in current items
+          React.useEffect(() => {
+            const currentValues = items.map(item => item.value);
+            if (!currentValues.includes(selectedValue)) {
+              setSelectedValue(items[0].value);
+            }
+          }, [numItems]);
+
+          return (
+            <div>
+              <div className="variant-group">
+                <h4>Interactive Preview</h4>
+                <div className="variant-examples" style={{ display: 'flex', justifyContent: 'center', padding: '32px' }}>
+                  <SegmentedControl
+                    items={items}
+                    value={selectedValue}
+                    onChange={setSelectedValue}
+                    disabled={disabled}
+                    fullWidth={fullWidth}
+                  />
+                </div>
+                <p style={{ textAlign: 'center', fontSize: '14px', color: 'var(--content-secondary)', marginTop: '16px' }}>
+                  Selected: <strong>{selectedValue}</strong>
+                </p>
+              </div>
+
+              <div className="variant-group">
+                <h4>Controls</h4>
+                <div style={{ 
+                  display: 'grid', 
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
+                  gap: 'var(--spacing-400)',
+                  padding: 'var(--spacing-600)',
+                  background: 'var(--surface-below)',
+                  borderRadius: 'var(--radius-lg)'
+                }}>
+                  <div className="sidebar-section">
+                    <label className="section-label">Number of Items</label>
+                    <Select
+                      value={String(numItems)}
+                      onChange={(val) => setNumItems(Number(val))}
+                      options={[
+                        { value: '2', label: '2 items' },
+                        { value: '3', label: '3 items' },
+                        { value: '4', label: '4 items' }
+                      ]}
+                    />
+                  </div>
+
+                  <div className="sidebar-section">
+                    <label className="section-label">
+                      <input 
+                        type="checkbox"
+                        checked={hasIcons}
+                        onChange={(e) => setHasIcons(e.target.checked)}
+                        style={{ marginRight: '8px' }}
+                      />
+                      Show Icons
+                    </label>
+                  </div>
+
+                  <div className="sidebar-section">
+                    <label className="section-label">
+                      <input 
+                        type="checkbox"
+                        checked={disabled}
+                        onChange={(e) => setDisabled(e.target.checked)}
+                        style={{ marginRight: '8px' }}
+                      />
+                      Disabled
+                    </label>
+                  </div>
+
+                  <div className="sidebar-section">
+                    <label className="section-label">
+                      <input 
+                        type="checkbox"
+                        checked={fullWidth}
+                        onChange={(e) => setFullWidth(e.target.checked)}
+                        style={{ marginRight: '8px' }}
+                      />
+                      Full Width
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <div className="variant-group">
+                <h4>Examples</h4>
+                <div className="variant-examples" style={{ flexDirection: 'column', gap: '24px' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <p style={{ fontSize: '13px', color: 'var(--content-secondary)', margin: 0 }}>Text only (2 items)</p>
+                    <SegmentedControl
+                      items={[
+                        { label: 'Fill', value: 'fill' },
+                        { label: 'Fit', value: 'fit' }
+                      ]}
+                      value="fill"
+                      onChange={() => {}}
+                    />
+                  </div>
+                  
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <p style={{ fontSize: '13px', color: 'var(--content-secondary)', margin: 0 }}>With icons (2 items)</p>
+                    <SegmentedControl
+                      items={[
+                        { label: '', value: 'circle', iconBefore: <img src="Icons/circle.svg" alt="" width="16" height="16" style={{display: 'block'}} /> },
+                        { label: '', value: 'square', iconBefore: <img src="Icons/square.svg" alt="" width="16" height="16" style={{display: 'block'}} /> }
+                      ]}
+                      value="circle"
+                      onChange={() => {}}
+                    />
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <p style={{ fontSize: '13px', color: 'var(--content-secondary)', margin: 0 }}>3 items</p>
+                    <SegmentedControl
+                      items={[
+                        { label: 'Day', value: 'day' },
+                        { label: 'Week', value: 'week' },
+                        { label: 'Month', value: 'month' }
+                      ]}
+                      value="week"
+                      onChange={() => {}}
+                    />
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <p style={{ fontSize: '13px', color: 'var(--content-secondary)', margin: 0 }}>4 items</p>
+                    <SegmentedControl
+                      items={[
+                        { label: 'XS', value: 'xs' },
+                        { label: 'S', value: 's' },
+                        { label: 'M', value: 'm' },
+                        { label: 'L', value: 'l' }
+                      ]}
+                      value="m"
+                      onChange={() => {}}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        };
+
+        // Make SegmentedControl globally available
+        window.SegmentedControl = SegmentedControl;
+
+        // Render the demo
+        const segmentedControlRoot = ReactDOM.createRoot(document.getElementById('segmented-control-demo-root'));
+        segmentedControlRoot.render(<SegmentedControlDemo />);
+    </script>
+
+    <!-- DS Navbar (Back button + Title + Theme toggle) -->
+    <script type="text/babel">
+        const { useState } = React;
+
+        // Back arrow icon
+        const BackArrowIcon = () => (
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M10 13L5 8L10 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        );
+
+        // Light mode icon (sun)
+        const LightIcon = () => (
+          <img src="Icons/light.svg" alt="" width="16" height="16" style={{display: 'block'}} />
+        );
+
+        // Dark mode icon (moon)
+        const DarkIcon = () => (
+          <img src="Icons/dark.svg" alt="" width="16" height="16" style={{display: 'block'}} />
+        );
+
+        const DSNavbar = () => {
+          const savedTheme = localStorage.getItem('designSystemMode') || 'light';
+          const [theme, setTheme] = useState(savedTheme);
+
+          const handleThemeChange = (value) => {
+            setTheme(value);
+            const html = document.documentElement;
+            if (value === 'dark') {
+              html.classList.add('dark-mode');
+              html.classList.remove('light-mode');
+            } else {
+              html.classList.add('light-mode');
+              html.classList.remove('dark-mode');
+            }
+            localStorage.setItem('designSystemMode', value);
+          };
+
+          return (
+            <div className="navbar-component">
+              <div className="navbar-outer">
+                <div className="navbar-inner">
+                  {/* Left: Back button */}
+                  <div className="navbar-left">
+                    <a href="index.html" className="ds-navbar-back">
+                      <BackArrowIcon />
+                      <span>Back</span>
+                    </a>
+                  </div>
+
+                  {/* Center: Title */}
+                  <div className="navbar-center">
+                    <span className="ds-navbar-title">Osmosis Design System</span>
+                  </div>
+
+                  {/* Right: Theme Toggle */}
+                  <div className="navbar-right">
+                    <SegmentedControl
+                      items={[
+                        { value: 'light', iconBefore: <LightIcon /> },
+                        { value: 'dark', iconBefore: <DarkIcon /> }
+                      ]}
+                      value={theme}
+                      onChange={handleThemeChange}
+                    />
+                  </div>
+
+                  {/* Inner shadow overlay */}
+                  <div className="navbar-inner-shadow"></div>
+                </div>
+              </div>
+            </div>
+          );
+        };
+
+        // Render DS Navbar
+        const dsNavbarRoot = ReactDOM.createRoot(document.getElementById('ds-navbar-root'));
+        dsNavbarRoot.render(<DSNavbar />);
+    </script>
+
+    <!-- TextField Component React Demo -->
+    <script type="text/babel">
+        const { useState } = React;
+        
+        // Get TextField from global scope
+        const TextField = window.TextField;
+    </script>
+
+    <!-- Slider Component with TextField Integration React Demo -->
+    <script type="text/babel">
+        const { useState } = React;
+        
+        // Get TextField from global scope
+        const TextField = window.TextField;
+
+        // Slider Component with TextField (from Figma)
+        const Slider = ({ 
+          value = 50,
+          min = 0,
+          max = 100,
+          step = 1,
+          onChange,
+          showPercentage = false,
+          disabled = false,
+          className = '',
+          TextField
+        }) => {
+          const [textValue, setTextValue] = React.useState(String(value));
+          const [error, setError] = React.useState(false);
+
+          // Update text value when slider value changes externally
+          React.useEffect(() => {
+            const displayValue = showPercentage ? String(value) : String(value);
+            setTextValue(displayValue);
+            setError(false);
+          }, [value, showPercentage]);
+
+          const handleSliderChange = (e) => {
+            if (!disabled && onChange) {
+              const newValue = Number(e.target.value);
+              onChange(newValue);
+            }
+          };
+
+          const handleTextFieldChange = (newValue) => {
+            setTextValue(newValue);
+            setError(false);
+          };
+
+          const handleTextFieldBlur = () => {
+            if (!disabled && onChange) {
+              // Remove percentage sign if present
+              let numericValue = textValue.replace('%', '').trim();
+              
+              // Check if it's a valid number
+              const parsed = Number(numericValue);
+              
+              if (isNaN(parsed) || numericValue === '') {
+                // Invalid input - revert to current value
+                setTextValue(showPercentage ? String(value) : String(value));
+                setError(true);
+                setTimeout(() => setError(false), 1000);
+              } else {
+                // Clamp to min/max range
+                const clampedValue = Math.max(min, Math.min(max, parsed));
+                onChange(clampedValue);
+                setTextValue(String(clampedValue));
+              }
+            }
+          };
+
+          const displayValue = showPercentage ? `${textValue}%` : textValue;
+
+          return (
+            <div className={`slider-component ${disabled ? 'disabled' : ''} ${className}`}>
+              <div className="slider-track-container">
+                <input
+                  type="range"
+                  min={min}
+                  max={max}
+                  step={step}
+                  value={value}
+                  onChange={handleSliderChange}
+                  disabled={disabled}
+                  className="slider-input"
+                />
+              </div>
+              {TextField ? (
+                <div className="slider-text-field-wrapper">
+                  <TextField
+                    type="number"
+                    value={displayValue}
+                    onChange={handleTextFieldChange}
+                    onBlur={handleTextFieldBlur}
+                    disabled={disabled}
+                    error={error}
+                    className="slider-text-field"
+                  />
+                </div>
+              ) : (
+                <div className="slider-value-container">
+                  <div className="slider-value-display">
+                    {displayValue}
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        };
+
+        // Interactive Demo Component
+        const SliderDemo = () => {
+          const [sliderValue, setSliderValue] = useState(50);
+          const [min, setMin] = useState(0);
+          const [max, setMax] = useState(100);
+          const [step, setStep] = useState(1);
+          const [showPercentage, setShowPercentage] = useState(false);
+          const [disabled, setDisabled] = useState(false);
+
+          // Reset value if it's out of new range
+          React.useEffect(() => {
+            if (sliderValue < min) setSliderValue(min);
+            if (sliderValue > max) setSliderValue(max);
+          }, [min, max]);
+
+          return (
+            <div>
+              <div className="variant-group">
+                <h4>Interactive Preview (with editable TextField)</h4>
+                <div className="variant-examples" style={{ display: 'flex', justifyContent: 'center', padding: '32px', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
+                  <Slider
+                    value={sliderValue}
+                    min={min}
+                    max={max}
+                    step={step}
+                    onChange={setSliderValue}
+                    showPercentage={showPercentage}
+                    disabled={disabled}
+                    TextField={TextField}
+                  />
+                  <p style={{ fontSize: '14px', color: 'var(--content-secondary)', margin: 0 }}>
+                    Current value: <strong>{sliderValue}</strong> - Try typing a number in the text field!
+                  </p>
+                </div>
+              </div>
+
+              <div className="variant-group">
+                <h4>Controls</h4>
+                <div style={{ 
+                  display: 'grid', 
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
+                  gap: 'var(--spacing-400)',
+                  padding: 'var(--spacing-600)',
+                  background: 'var(--surface-below)',
+                  borderRadius: 'var(--radius-lg)'
+                }}>
+                  <div className="sidebar-section">
+                    <label className="section-label">Min Value</label>
+                    <TextField
+                      type="number"
+                      value={String(min)}
+                      onChange={(val) => setMin(Number(val))}
+                    />
+                  </div>
+
+                  <div className="sidebar-section">
+                    <label className="section-label">Max Value</label>
+                    <TextField
+                      type="number"
+                      value={String(max)}
+                      onChange={(val) => setMax(Number(val))}
+                    />
+                  </div>
+
+                  <div className="sidebar-section">
+                    <label className="section-label">Step</label>
+                    <TextField
+                      type="number"
+                      value={String(step)}
+                      onChange={(val) => setStep(Number(val))}
+                    />
+                  </div>
+
+                  <div className="sidebar-section">
+                    <label className="section-label">
+                      <input 
+                        type="checkbox"
+                        checked={showPercentage}
+                        onChange={(e) => setShowPercentage(e.target.checked)}
+                        style={{ marginRight: '8px' }}
+                      />
+                      Show as Percentage
+                    </label>
+                  </div>
+
+                  <div className="sidebar-section">
+                    <label className="section-label">
+                      <input 
+                        type="checkbox"
+                        checked={disabled}
+                        onChange={(e) => setDisabled(e.target.checked)}
+                        style={{ marginRight: '8px' }}
+                      />
+                      Disabled
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <div className="variant-group">
+                <h4>Examples (with editable TextField)</h4>
+                <div className="variant-examples" style={{ flexDirection: 'column', gap: '24px', alignItems: 'stretch' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <p style={{ fontSize: '13px', color: 'var(--content-secondary)', margin: 0 }}>Default (0-100) - Type in the field to change value</p>
+                    <Slider
+                      value={50}
+                      min={0}
+                      max={100}
+                      step={1}
+                      onChange={() => {}}
+                      TextField={TextField}
+                    />
+                  </div>
+                  
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <p style={{ fontSize: '13px', color: 'var(--content-secondary)', margin: 0 }}>With percentage (0-400%) - Try typing 250</p>
+                    <Slider
+                      value={100}
+                      min={0}
+                      max={400}
+                      step={5}
+                      showPercentage={true}
+                      onChange={() => {}}
+                      TextField={TextField}
+                    />
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <p style={{ fontSize: '13px', color: 'var(--content-secondary)', margin: 0 }}>Grid size (4-32, step 4) - Out-of-range values are clamped</p>
+                    <Slider
+                      value={16}
+                      min={4}
+                      max={32}
+                      step={4}
+                      onChange={() => {}}
+                      TextField={TextField}
+                    />
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <p style={{ fontSize: '13px', color: 'var(--content-secondary)', margin: 0 }}>Disabled</p>
+                    <Slider
+                      value={75}
+                      min={0}
+                      max={100}
+                      disabled={true}
+                      onChange={() => {}}
+                      TextField={TextField}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        };
+
+        // Render the demo
+        const sliderRoot = ReactDOM.createRoot(document.getElementById('slider-demo-root'));
+        sliderRoot.render(<SliderDemo />);
+    </script>
+
+    <!-- Knob Standalone Component Demo -->
+    <script type="text/babel">
+        {
+        const { useState, useRef, useMemo, useEffect } = React;
+
+        // Inline Knob component for design-system demo
+        const Knob = ({
+          label = 'Label',
+          value = 50,
+          min = 0,
+          max = 100,
+          step = 1,
+          defaultValue,
+          onChange,
+          showPercentage = false,
+          disabled = false,
+          className = ''
+        }) => {
+          const [isHovered, setIsHovered] = useState(false);
+          const [isDragging, setIsDragging] = useState(false);
+          const [isEditing, setIsEditing] = useState(false);
+          const [editValue, setEditValue] = useState('');
+          const knobRef = useRef(null);
+          const inputRef = useRef(null);
+          const ARC_START = -133;
+          const ARC_END = 133;
+          const ARC_RANGE = ARC_END - ARC_START;
+          const percentage = max !== min ? (value - min) / (max - min) : 0;
+          const rotation = ARC_START + percentage * ARC_RANGE;
+          const DOT_COUNT = 10;
+          const dots = useMemo(() => {
+            const result = [];
+            for (let i = 0; i <= DOT_COUNT; i++) {
+              const dotPct = i / DOT_COUNT;
+              const angle = ARC_START + dotPct * ARC_RANGE;
+              const rad = (angle - 90) * Math.PI / 180;
+              const r = 28;
+              result.push({
+                x: 32 + r * Math.cos(rad),
+                y: 32 + r * Math.sin(rad),
+                angle,
+                lit: percentage > 0 && dotPct <= percentage
+              });
+            }
+            return result;
+          }, [percentage]);
+          const clamp = (v) => {
+            v = Math.round(v / step) * step;
+            const decimals = (String(step).split('.')[1] || '').length;
+            v = parseFloat(v.toFixed(decimals));
+            return Math.max(min, Math.min(max, v));
+          };
+          const fire = (v) => { if (onChange) onChange(v); };
+          const showActive = isHovered || isDragging;
+          const handlePointerDown = (e) => {
+            if (disabled) return;
+            e.preventDefault();
+            setIsDragging(true);
+            const startY = e.clientY;
+            const startVal = value;
+            const range = max - min;
+            const onMove = (e) => {
+              const dy = startY - e.clientY;
+              const sensitivity = range / 150;
+              fire(clamp(startVal + dy * sensitivity));
+            };
+            const onUp = () => {
+              setIsDragging(false);
+              window.removeEventListener('pointermove', onMove);
+              window.removeEventListener('pointerup', onUp);
+            };
+            window.addEventListener('pointermove', onMove);
+            window.addEventListener('pointerup', onUp);
+          };
+          const handleWheel = (e) => {
+            if (disabled) return;
+            e.preventDefault();
+            const delta = e.deltaY < 0 ? step : -step;
+            fire(clamp(value + delta));
+          };
+          const handleKeyDown = (e) => {
+            if (disabled) return;
+            if (e.key === 'ArrowUp' || e.key === 'ArrowRight') {
+              e.preventDefault(); fire(clamp(value + step));
+            } else if (e.key === 'ArrowDown' || e.key === 'ArrowLeft') {
+              e.preventDefault(); fire(clamp(value - step));
+            }
+          };
+          const handleReset = (e) => {
+            e.stopPropagation();
+            fire(defaultValue !== undefined ? defaultValue : min);
+          };
+          const startEditing = () => {
+            if (disabled) return;
+            setIsEditing(true);
+            setEditValue(String(value));
+            setTimeout(() => inputRef.current && inputRef.current.focus(), 0);
+          };
+          const commitEdit = () => {
+            setIsEditing(false);
+            const parsed = parseFloat(editValue.replace(/%/g, ''));
+            if (!isNaN(parsed)) fire(clamp(parsed));
+          };
+          const handleEditKeyDown = (e) => {
+            if (e.key === 'Enter' || e.key === 'Tab') { e.preventDefault(); commitEdit(); }
+            else if (e.key === 'Escape') { setIsEditing(false); }
+          };
+          useEffect(() => {
+            if (!isHovered && !isDragging) setIsEditing(false);
+          }, [isHovered, isDragging]);
+          const ResetIcon = () => (
+            <img src="Icons/reset.svg" alt="" width="16" height="16" style={{display: 'block'}} />
+          );
+          return (
+            <div
+              className={`knob-component ${disabled ? 'disabled' : ''} ${isDragging ? 'dragging' : ''} ${className}`}
+              onMouseEnter={() => setIsHovered(true)}
+              onMouseLeave={() => setIsHovered(false)}
+            >
+              <div className="knob-body">
+                <svg className="knob-dots" viewBox="0 0 64 64" width="64" height="64">
+                  {dots.map((d, i) => (
+                    <rect key={i} x={d.x - 1} y={d.y - 2} width="2" height="4" rx="1" transform={`rotate(${d.angle}, ${d.x}, ${d.y})`} className={d.lit ? 'dot-lit' : 'dot-unlit'} />
+                  ))}
+                </svg>
+                <div
+                  className="knob-handle"
+                  ref={knobRef}
+                  onPointerDown={handlePointerDown}
+                  onWheel={handleWheel}
+                  onKeyDown={handleKeyDown}
+                  tabIndex={disabled ? -1 : 0}
+                  role="slider"
+                  aria-valuenow={value}
+                  aria-valuemin={min}
+                  aria-valuemax={max}
+                  aria-label={label}
+                >
+                  <div className="knob-outer">
+                    <div className="knob-inner">
+                      <div className="knob-indicator" style={{ transform: `rotate(${rotation}deg)` }}>
+                        <div className="knob-bar" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {/* Value field — both layers always rendered, crossfade via opacity */}
+              <div className={`knob-value-field ${showActive ? 'active' : ''}`}>
+                {/* Label layer — visible at rest, fades out on hover */}
+                <span className="knob-label-layer">{label}</span>
+                {/* Value layer — fades in on hover */}
+                <div className="knob-value-layer">
+                  <div className="knob-value-content">
+                    {isEditing ? (
+                      <input
+                        ref={inputRef}
+                        type="text"
+                        className="knob-edit-input"
+                        value={editValue}
+                        onChange={(e) => setEditValue(e.target.value.replace(/%/g, ''))}
+                        onBlur={commitEdit}
+                        onKeyDown={handleEditKeyDown}
+                      />
+                    ) : (
+                      <span className="knob-value-text" onClick={startEditing}>
+                        {String(value)}
+                      </span>
+                    )}
+                    {showPercentage && <span className="knob-suffix">%</span>}
+                  </div>
+                  <button className="knob-reset" onClick={handleReset} type="button" aria-label="Reset">
+                    <ResetIcon />
+                  </button>
+                </div>
+              </div>
+            </div>
+          );
+        };
+
+        // KnobDemo Component
+        const KnobDemo = () => {
+          const [val1, setVal1] = useState(50);
+          const [val2, setVal2] = useState(75);
+          const [val3, setVal3] = useState(0);
+          return (
+            <div>
+              <div className="variant-group">
+                <h4>Interactive Preview</h4>
+                <div className="variant-examples" style={{ display: 'flex', justifyContent: 'center', padding: '32px', gap: '24px', flexWrap: 'wrap' }}>
+                  <Knob label="Volume" value={val1} min={0} max={100} step={1} showPercentage={true} onChange={setVal1} />
+                  <Knob label="Scale" value={val2} min={0} max={400} step={5} showPercentage={true} onChange={setVal2} />
+                  <Knob label="Count" value={val3} min={4} max={256} step={4} onChange={setVal3} />
+                  <Knob label="Disabled" value={50} disabled={true} showPercentage={true} />
+                </div>
+              </div>
+              <div className="variant-group">
+                <h4>States</h4>
+                <div className="variant-examples" style={{ display: 'flex', justifyContent: 'center', padding: '32px', gap: '24px', flexWrap: 'wrap' }}>
+                  <div style={{ textAlign: 'center' }}>
+                    <p style={{ fontSize: '12px', color: 'var(--content-secondary)', marginBottom: '8px' }}>0% (min)</p>
+                    <Knob label="Min" value={0} />
+                  </div>
+                  <div style={{ textAlign: 'center' }}>
+                    <p style={{ fontSize: '12px', color: 'var(--content-secondary)', marginBottom: '8px' }}>50%</p>
+                    <Knob label="Mid" value={50} />
+                  </div>
+                  <div style={{ textAlign: 'center' }}>
+                    <p style={{ fontSize: '12px', color: 'var(--content-secondary)', marginBottom: '8px' }}>100% (max)</p>
+                    <Knob label="Max" value={100} />
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        };
+
+        const knobRoot = ReactDOM.createRoot(document.getElementById('knob-demo-root'));
+        knobRoot.render(<KnobDemo />);
+        }
+    </script>
+
+    <!-- TextField Standalone Component Demo -->
+    <script type="text/babel">
+        const { useState } = React;
+
+        // TextFieldDemo Component
+        const TextFieldDemo = () => {
+          const [textValue, setTextValue] = useState('');
+          const [numberValue, setNumberValue] = useState('42');
+          const [emailValue, setEmailValue] = useState('');
+          const [errorText, setErrorText] = useState('');
+          const [hasIcon, setHasIcon] = useState(true);
+          const [isDisabled, setIsDisabled] = useState(false);
+          const [showError, setShowError] = useState(false);
+
+          return (
+            <div>
+              <div className="variant-group">
+                <h4>Interactive Preview</h4>
+                <div className="variant-examples" style={{ display: 'flex', justifyContent: 'center', padding: '32px', flexDirection: 'column', gap: '16px', alignItems: 'center' }}>
+                  <TextField
+                    value={textValue}
+                    onChange={setTextValue}
+                    placeholder="Type something..."
+                    iconBefore={hasIcon}
+                    disabled={isDisabled}
+                    error={showError ? 'This field has an error' : false}
+                  />
+                  <p style={{ fontSize: '14px', color: 'var(--content-secondary)', margin: 0 }}>
+                    Current value: <strong>{textValue || '(empty)'}</strong>
+                  </p>
+                </div>
+              </div>
+
+              <div className="variant-group">
+                <h4>Controls</h4>
+                <div style={{ 
+                  display: 'flex',
+                  gap: 'var(--spacing-400)',
+                  padding: 'var(--spacing-600)',
+                  background: 'var(--surface-below)',
+                  borderRadius: 'var(--radius-lg)',
+                  flexWrap: 'wrap'
+                }}>
+                  <div className="sidebar-section">
+                    <label className="section-label">
+                      <input 
+                        type="checkbox"
+                        checked={hasIcon}
+                        onChange={(e) => setHasIcon(e.target.checked)}
+                        style={{ marginRight: '8px' }}
+                      />
+                      Show Icon
+                    </label>
+                  </div>
+
+                  <div className="sidebar-section">
+                    <label className="section-label">
+                      <input 
+                        type="checkbox"
+                        checked={isDisabled}
+                        onChange={(e) => setIsDisabled(e.target.checked)}
+                        style={{ marginRight: '8px' }}
+                      />
+                      Disabled
+                    </label>
+                  </div>
+
+                  <div className="sidebar-section">
+                    <label className="section-label">
+                      <input 
+                        type="checkbox"
+                        checked={showError}
+                        onChange={(e) => setShowError(e.target.checked)}
+                        style={{ marginRight: '8px' }}
+                      />
+                      Show Error
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <div className="variant-group">
+                <h4>Examples</h4>
+                <div className="variant-examples" style={{ flexDirection: 'column', gap: '24px', alignItems: 'flex-start' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-start' }}>
+                    <p style={{ fontSize: '13px', color: 'var(--content-secondary)', margin: 0 }}>Text input with icon</p>
+                    <TextField
+                      value={textValue}
+                      onChange={setTextValue}
+                      placeholder="Enter text..."
+                      iconBefore={true}
+                    />
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-start' }}>
+                    <p style={{ fontSize: '13px', color: 'var(--content-secondary)', margin: 0 }}>Number input (for Slider integration)</p>
+                    <TextField
+                      type="number"
+                      value={numberValue}
+                      onChange={setNumberValue}
+                      placeholder="0"
+                    />
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-start' }}>
+                    <p style={{ fontSize: '13px', color: 'var(--content-secondary)', margin: 0 }}>Email input</p>
+                    <TextField
+                      type="email"
+                      value={emailValue}
+                      onChange={setEmailValue}
+                      placeholder="email@example.com"
+                    />
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-start' }}>
+                    <p style={{ fontSize: '13px', color: 'var(--content-secondary)', margin: 0 }}>Error state</p>
+                    <TextField
+                      value={errorText}
+                      onChange={setErrorText}
+                      placeholder="This field has an error"
+                      error="Please enter a valid value"
+                      iconBefore={true}
+                    />
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-start' }}>
+                    <p style={{ fontSize: '13px', color: 'var(--content-secondary)', margin: 0 }}>Focused state (click to focus)</p>
+                    <TextField
+                      value=""
+                      onChange={() => {}}
+                      placeholder="Click to see focused state"
+                      iconBefore={true}
+                    />
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-start' }}>
+                    <p style={{ fontSize: '13px', color: 'var(--content-secondary)', margin: 0 }}>Disabled state</p>
+                    <TextField
+                      value="Disabled field"
+                      onChange={() => {}}
+                      disabled={true}
+                      iconBefore={true}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        };
+
+        // Render the demo
+        const textFieldRoot = ReactDOM.createRoot(document.getElementById('textfield-demo-root'));
+        textFieldRoot.render(<TextFieldDemo />);
+    </script>
+
+    <!-- Divider Component React Demo -->
+    <script type="text/babel">
+        const { useState } = React;
+        
+        // Get Select from global scope
+        const Select = window.Select;
+
+        // Divider Component (from Figma)
+        const Divider = ({ 
+          spacing = 'md',
+          className = ''
+        }) => {
+          const spacingClasses = {
+            sm: 'divider-spacing-sm',
+            md: 'divider-spacing-md',
+            lg: 'divider-spacing-lg'
+          };
+
+          return (
+            <div className={`divider-wrapper ${spacingClasses[spacing]} ${className}`}>
+              <div className="divider-line"></div>
+            </div>
+          );
+        };
+
+        // Interactive Demo Component
+        const DividerDemo = () => {
+          const [spacing, setSpacing] = useState('md');
+
+          return (
+            <div>
+              <div className="variant-group">
+                <h4>Interactive Preview</h4>
+                <div className="variant-examples" style={{ 
+                  display: 'block', 
+                  padding: '32px',
+                  background: 'var(--surface-ground)',
+                  borderRadius: 'var(--radius-lg)'
+                }}>
+                  <p style={{ fontSize: '14px', color: 'var(--content-primary)', margin: 0, marginBottom: '16px' }}>
+                    Content above divider
+                  </p>
+                  <Divider spacing={spacing} />
+                  <p style={{ fontSize: '14px', color: 'var(--content-primary)', margin: 0, marginTop: '16px' }}>
+                    Content below divider
+                  </p>
+                </div>
+              </div>
+
+              <div className="variant-group">
+                <h4>Controls</h4>
+                <div style={{ 
+                  display: 'flex',
+                  gap: 'var(--spacing-400)',
+                  padding: 'var(--spacing-600)',
+                  background: 'var(--surface-below)',
+                  borderRadius: 'var(--radius-lg)'
+                }}>
+                  <div className="sidebar-section">
+                    <label className="section-label">Spacing</label>
+                    <Select
+                      value={spacing}
+                      onChange={setSpacing}
+                      options={[
+                        { value: 'sm', label: 'Small' },
+                        { value: 'md', label: 'Medium' },
+                        { value: 'lg', label: 'Large' }
+                      ]}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="variant-group">
+                <h4>Examples in Context</h4>
+                <div className="variant-examples" style={{ 
+                  display: 'block',
+                  padding: '24px',
+                  background: 'var(--surface-ground)',
+                  borderRadius: 'var(--radius-lg)'
+                }}>
+                  <div style={{ marginBottom: '32px' }}>
+                    <p style={{ fontSize: '13px', color: 'var(--content-secondary)', margin: '0 0 16px 0' }}>
+                      Small spacing
+                    </p>
+                    <div style={{ background: 'var(--surface-above)', padding: '16px', borderRadius: 'var(--radius-lg)' }}>
+                      <h4 style={{ margin: '0 0 8px 0', fontSize: '16px', color: 'var(--content-primary)' }}>Section Title</h4>
+                      <p style={{ margin: 0, fontSize: '14px', color: 'var(--content-secondary)' }}>Some content here</p>
+                      <Divider spacing="sm" />
+                      <h4 style={{ margin: '0 0 8px 0', fontSize: '16px', color: 'var(--content-primary)' }}>Another Section</h4>
+                      <p style={{ margin: 0, fontSize: '14px', color: 'var(--content-secondary)' }}>More content here</p>
+                    </div>
+                  </div>
+
+                  <div style={{ marginBottom: '32px' }}>
+                    <p style={{ fontSize: '13px', color: 'var(--content-secondary)', margin: '0 0 16px 0' }}>
+                      Medium spacing (default)
+                    </p>
+                    <div style={{ background: 'var(--surface-above)', padding: '16px', borderRadius: 'var(--radius-lg)' }}>
+                      <h4 style={{ margin: '0 0 8px 0', fontSize: '16px', color: 'var(--content-primary)' }}>Section Title</h4>
+                      <p style={{ margin: 0, fontSize: '14px', color: 'var(--content-secondary)' }}>Some content here</p>
+                      <Divider spacing="md" />
+                      <h4 style={{ margin: '0 0 8px 0', fontSize: '16px', color: 'var(--content-primary)' }}>Another Section</h4>
+                      <p style={{ margin: 0, fontSize: '14px', color: 'var(--content-secondary)' }}>More content here</p>
+                    </div>
+                  </div>
+
+                  <div>
+                    <p style={{ fontSize: '13px', color: 'var(--content-secondary)', margin: '0 0 16px 0' }}>
+                      Large spacing
+                    </p>
+                    <div style={{ background: 'var(--surface-above)', padding: '16px', borderRadius: 'var(--radius-lg)' }}>
+                      <h4 style={{ margin: '0 0 8px 0', fontSize: '16px', color: 'var(--content-primary)' }}>Section Title</h4>
+                      <p style={{ margin: 0, fontSize: '14px', color: 'var(--content-secondary)' }}>Some content here</p>
+                      <Divider spacing="lg" />
+                      <h4 style={{ margin: '0 0 8px 0', fontSize: '16px', color: 'var(--content-primary)' }}>Another Section</h4>
+                      <p style={{ margin: 0, fontSize: '14px', color: 'var(--content-secondary)' }}>More content here</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        };
+
+        // Render the demo
+        const dividerRoot = ReactDOM.createRoot(document.getElementById('divider-demo-root'));
+        dividerRoot.render(<DividerDemo />);
+    </script>
+
+    <!-- Control Component React Demo -->
+    <script type="text/babel">
+        const { useState } = React;
+        
+        // Get components from global scope
+        const Control = window.Control;
+        const Button = window.Button;
+        const SegmentedControl = window.SegmentedControl;
+        const Slider = window.Slider;
+        const Select = window.Select;
+        const TextField = window.TextField;
+
+        // Interactive Demo Component
+        const ControlDemo = () => {
+          // State for interactive preview controls
+          const [label, setLabel] = useState('Settings');
+          const [description, setDescription] = useState('Configure your preferences');
+          const [helperText, setHelperText] = useState('Changes are saved automatically');
+          const [showDescription, setShowDescription] = useState(true);
+          const [showHelperText, setShowHelperText] = useState(true);
+          const [controlType, setControlType] = useState('segmented');
+          
+          // State for the child controls
+          const [segmentedValue, setSegmentedValue] = useState('option1');
+          const [sliderValue, setSliderValue] = useState(50);
+          const [buttonClicked, setButtonClicked] = useState(false);
+          const [selectValue, setSelectValue] = useState('sm');
+
+          // Render the appropriate control based on controlType
+          const renderControl = () => {
+            switch(controlType) {
+              case 'segmented':
+                return (
+                  <SegmentedControl
+                    items={[
+                      { value: 'option1', label: 'Option 1' },
+                      { value: 'option2', label: 'Option 2' }
+                    ]}
+                    value={segmentedValue}
+                    onChange={setSegmentedValue}
+                  />
+                );
+              case 'slider':
+                return (
+                  <Slider
+                    value={sliderValue}
+                    onChange={setSliderValue}
+                    min={0}
+                    max={100}
+                    step={1}
+                  />
+                );
+              case 'button':
+                return (
+                  <Button
+                    variant="outline"
+                    label="Action Button"
+                    onClick={() => {
+                      setButtonClicked(true);
+                      setTimeout(() => setButtonClicked(false), 2000);
+                    }}
+                  />
+                );
+              case 'select':
+                return (
+                  <Select
+                    value={selectValue}
+                    onChange={setSelectValue}
+                    options={[
+                      { value: 'sm', label: 'Small' },
+                      { value: 'md', label: 'Medium' },
+                      { value: 'lg', label: 'Large' }
+                    ]}
+                  />
+                );
+              default:
+                return null;
+            }
+          };
+
+          return (
+            <div>
+              {/* Interactive Preview */}
+              <div className="variant-group">
+                <h4>Interactive Preview</h4>
+                <div style={{ display: 'flex', gap: 'var(--spacing-600)' }}>
+                  {/* Preview Area */}
+                  <div className="variant-examples" style={{ 
+                    display: 'flex', 
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    padding: '48px',
+                    flex: 1
+                  }}>
+                    <Control
+                      label={label}
+                      description={showDescription ? description : ''}
+                      helperText={showHelperText ? (buttonClicked ? "Action completed!" : helperText) : ''}
+                    >
+                      {renderControl()}
+                    </Control>
+                  </div>
+
+                  {/* Controls Sidebar */}
+                  <div style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 'var(--spacing-400)',
+                    padding: 'var(--spacing-600)',
+                    background: 'var(--surface-below)',
+                    borderRadius: 'var(--radius-lg)',
+                    minWidth: '280px'
+                  }}>
+                    <div className="sidebar-section">
+                      <label className="section-label">Control Type</label>
+                      <Select
+                        value={controlType}
+                        onChange={setControlType}
+                        options={[
+                          { value: 'segmented', label: 'Segmented Control' },
+                          { value: 'slider', label: 'Slider' },
+                          { value: 'button', label: 'Button' },
+                          { value: 'select', label: 'Select' }
+                        ]}
+                      />
+                    </div>
+
+                    <div className="sidebar-section">
+                      <label className="section-label">Label Text</label>
+                      <TextField
+                        value={label}
+                        onChange={setLabel}
+                        placeholder="Enter label..."
+                      />
+                    </div>
+
+                    <div className="sidebar-section">
+                      <label className="section-label">Show Description</label>
+                      <SegmentedControl
+                        items={[
+                          { value: 'yes', label: 'Yes' },
+                          { value: 'no', label: 'No' }
+                        ]}
+                        value={showDescription ? 'yes' : 'no'}
+                        onChange={(val) => setShowDescription(val === 'yes')}
+                      />
+                    </div>
+
+                    {showDescription && (
+                      <div className="sidebar-section">
+                        <label className="section-label">Description Text</label>
+                        <TextField
+                          value={description}
+                          onChange={setDescription}
+                          placeholder="Enter description..."
+                        />
+                      </div>
+                    )}
+
+                    <div className="sidebar-section">
+                      <label className="section-label">Show Helper Text</label>
+                      <SegmentedControl
+                        items={[
+                          { value: 'yes', label: 'Yes' },
+                          { value: 'no', label: 'No' }
+                        ]}
+                        value={showHelperText ? 'yes' : 'no'}
+                        onChange={(val) => setShowHelperText(val === 'yes')}
+                      />
+                    </div>
+
+                    {showHelperText && (
+                      <div className="sidebar-section">
+                        <label className="section-label">Helper Text</label>
+                        <TextField
+                          value={helperText}
+                          onChange={setHelperText}
+                          placeholder="Enter helper text..."
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Examples */}
+              <div className="variant-group">
+                <h4>Usage Examples</h4>
+                <div className="variant-examples" style={{ 
+                  display: 'flex', 
+                  flexDirection: 'column', 
+                  gap: '32px', 
+                  alignItems: 'flex-start',
+                  padding: '32px'
+                }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}>
+                    <p style={{ fontSize: '13px', color: 'var(--content-secondary)', margin: 0 }}>
+                      With all text elements
+                    </p>
+                    <Control
+                      label="Display Mode"
+                      description="Choose how content is displayed"
+                      helperText="This setting applies to all pages"
+                    >
+                      <SegmentedControl
+                        items={[
+                          { value: 'grid', label: 'Grid' },
+                          { value: 'list', label: 'List' }
+                        ]}
+                        value="grid"
+                        onChange={() => {}}
+                      />
+                    </Control>
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}>
+                    <p style={{ fontSize: '13px', color: 'var(--content-secondary)', margin: 0 }}>
+                      With description only
+                    </p>
+                    <Control
+                      label="Brightness"
+                      description="Adjust screen brightness"
+                    >
+                      <Slider
+                        value={75}
+                        onChange={() => {}}
+                        min={0}
+                        max={100}
+                        step={1}
+                      />
+                    </Control>
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}>
+                    <p style={{ fontSize: '13px', color: 'var(--content-secondary)', margin: 0 }}>
+                      With helper text only
+                    </p>
+                    <Control
+                      label="Export"
+                      helperText="Click to download your project"
+                    >
+                      <Button
+                        variant="outline"
+                        label="Export Project"
+                      />
+                    </Control>
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}>
+                    <p style={{ fontSize: '13px', color: 'var(--content-secondary)', margin: 0 }}>
+                      Label only (minimal)
+                    </p>
+                    <Control label="Quality">
+                      <Select
+                        value="md"
+                        onChange={() => {}}
+                        options={[
+                          { value: 'sm', label: 'Low' },
+                          { value: 'md', label: 'Medium' },
+                          { value: 'lg', label: 'High' }
+                        ]}
+                      />
+                    </Control>
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        };
+
+        // Render the demo
+        const controlRoot = ReactDOM.createRoot(document.getElementById('control-demo-root'));
+        controlRoot.render(<ControlDemo />);
+    </script>
+
+    <!-- ImageReplacer Component React Demo -->
+    <script type="text/babel">
+        const { useState } = React;
+        
+        // Get ImageReplacer from global scope
+        const ImageReplacer = window.ImageReplacer;
+
+        // Interactive Demo Component
+        const ImageReplacerDemo = () => {
+          const [image, setImage] = useState('https://picsum.photos/200/200?random=1');
+          const [fileName, setFileName] = useState('sample_image.jpg');
+          const [disabled, setDisabled] = useState(false);
+          const [lastUploadInfo, setLastUploadInfo] = useState('');
+
+          const handleImageChange = (file, previewUrl) => {
+            setImage(previewUrl);
+            setFileName(file.name);
+            setLastUploadInfo(`Uploaded: ${file.name} (${(file.size / 1024).toFixed(2)} KB)`);
+          };
+
+          const handleReset = () => {
+            setImage('');
+            setFileName('No image selected');
+            setLastUploadInfo('Image reset');
+          };
+
+          return (
+            <div>
+              {/* Interactive Preview */}
+              <div className="variant-group">
+                <h4>Interactive Preview</h4>
+                <div style={{ display: 'flex', gap: 'var(--spacing-600)' }}>
+                  {/* Preview Area */}
+                  <div className="variant-examples" style={{ 
+                    display: 'flex', 
+                    flexDirection: 'column',
+                    gap: '16px',
+                    padding: '48px',
+                    flex: 1,
+                    alignItems: 'center'
+                  }}>
+                    <ImageReplacer
+                      imageSrc={image}
+                      fileName={fileName}
+                      onImageChange={handleImageChange}
+                      onReset={handleReset}
+                      disabled={disabled}
+                    />
+                    {lastUploadInfo && (
+                      <p style={{ 
+                        fontSize: '13px', 
+                        color: 'var(--content-secondary)', 
+                        margin: 0,
+                        textAlign: 'center'
+                      }}>
+                        {lastUploadInfo}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Controls Sidebar */}
+                  <div style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 'var(--spacing-400)',
+                    padding: 'var(--spacing-600)',
+                    background: 'var(--surface-below)',
+                    borderRadius: 'var(--radius-lg)',
+                    minWidth: '280px'
+                  }}>
+                    <div className="sidebar-section">
+                      <label className="section-label">Component State</label>
+                      <SegmentedControl
+                        items={[
+                          { value: 'enabled', label: 'Enabled' },
+                          { value: 'disabled', label: 'Disabled' }
+                        ]}
+                        value={disabled ? 'disabled' : 'enabled'}
+                        onChange={(val) => setDisabled(val === 'disabled')}
+                      />
+                    </div>
+
+                    <div className="sidebar-section">
+                      <label className="section-label">Actions</label>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <Button
+                          variant="outline"
+                          label="Load Random Image"
+                          onClick={() => {
+                            const randomId = Math.floor(Math.random() * 1000);
+                            setImage(`https://picsum.photos/200/200?random=${randomId}`);
+                            setFileName(`random_${randomId}.jpg`);
+                            setLastUploadInfo('Random image loaded');
+                          }}
+                          fullWidth
+                        />
+                        <Button
+                          variant="outline"
+                          label="Load Long Filename"
+                          onClick={() => {
+                            setImage('https://picsum.photos/200/200?random=2');
+                            setFileName('this_is_a_very_long_filename_that_should_be_truncated_at_32_characters.jpg');
+                            setLastUploadInfo('Long filename loaded (will be truncated)');
+                          }}
+                          fullWidth
+                        />
+                        <Button
+                          variant="outline"
+                          label="Clear Image"
+                          onClick={handleReset}
+                          fullWidth
+                        />
+                      </div>
+                    </div>
+
+                    <div style={{
+                      padding: 'var(--spacing-300)',
+                      background: 'var(--surface-ground)',
+                      borderRadius: 'var(--radius-md)',
+                      fontSize: '12px',
+                      color: 'var(--content-secondary)',
+                      lineHeight: '16px'
+                    }}>
+                      <strong>Tip:</strong> Click the component to select an image file from your computer. Filenames longer than 32 characters will be automatically truncated.
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Usage Examples */}
+              <div className="variant-group">
+                <h4>Usage Examples</h4>
+                <div className="variant-examples" style={{ 
+                  display: 'flex', 
+                  flexDirection: 'column', 
+                  gap: '24px', 
+                  alignItems: 'flex-start',
+                  padding: '32px'
+                }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}>
+                    <p style={{ fontSize: '13px', color: 'var(--content-secondary)', margin: 0 }}>
+                      With image
+                    </p>
+                    <ImageReplacer
+                      imageSrc="https://picsum.photos/200/200?random=3"
+                      fileName="example_image.jpg"
+                      onImageChange={(file, url) => console.log('Image changed:', file.name)}
+                      onReset={() => console.log('Reset clicked')}
+                    />
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}>
+                    <p style={{ fontSize: '13px', color: 'var(--content-secondary)', margin: 0 }}>
+                      Without image (placeholder)
+                    </p>
+                    <ImageReplacer
+                      imageSrc=""
+                      fileName=""
+                      onImageChange={(file, url) => console.log('Image changed:', file.name)}
+                    />
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}>
+                    <p style={{ fontSize: '13px', color: 'var(--content-secondary)', margin: 0 }}>
+                      Long filename (auto-truncated)
+                    </p>
+                    <ImageReplacer
+                      imageSrc="https://picsum.photos/200/200?random=4"
+                      fileName="this_is_a_very_long_filename_that_exceeds_32_characters_and_will_be_truncated.png"
+                      onImageChange={(file, url) => console.log('Image changed:', file.name)}
+                      onReset={() => console.log('Reset clicked')}
+                    />
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}>
+                    <p style={{ fontSize: '13px', color: 'var(--content-secondary)', margin: 0 }}>
+                      Disabled state
+                    </p>
+                    <ImageReplacer
+                      imageSrc="https://picsum.photos/200/200?random=5"
+                      fileName="disabled_image.jpg"
+                      disabled={true}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        };
+
+        // Render the demo
+        const imageReplacerRoot = ReactDOM.createRoot(document.getElementById('image-replacer-demo-root'));
+        imageReplacerRoot.render(<ImageReplacerDemo />);
+    </script>
+
+    <!-- Navbar Component React Demo -->
+    <script type="text/babel">
+        const { useState } = React;
+        
+        // Get Navbar from global scope
+        const Navbar = window.Navbar;
+
+        // Interactive Demo Component
+        const NavbarDemo = () => {
+          const [image, setImage] = useState('https://picsum.photos/200/200?random=10');
+          const [fileName, setFileName] = useState('project_thumbnail.jpg');
+          const [selectedView, setSelectedView] = useState('grid');
+          const [disabled, setDisabled] = useState(false);
+          const [lastAction, setLastAction] = useState('');
+
+          const handleImageChange = (file, previewUrl) => {
+            setImage(previewUrl);
+            setFileName(file.name);
+            setLastAction(`Image changed to: ${file.name}`);
+          };
+
+          const handleImageReset = () => {
+            setImage('');
+            setFileName('No image');
+            setLastAction('Image reset');
+          };
+
+          const handleViewChange = (view) => {
+            setSelectedView(view);
+            setLastAction(`View changed to: ${view}`);
+          };
+
+          const handleExport = () => {
+            setLastAction('Design system button clicked!');
+          };
+
+          return (
+            <div>
+              {/* Interactive Preview */}
+              <div className="variant-group">
+                <h4>Interactive Preview</h4>
+                <div style={{ display: 'flex', gap: 'var(--spacing-600)', flexDirection: 'column' }}>
+                  {/* Preview Area */}
+                  <div style={{ 
+                    width: '100%',
+                    background: 'var(--surface-below)',
+                    padding: '24px',
+                    borderRadius: 'var(--radius-lg)',
+                    overflow: 'auto'
+                  }}>
+                    <Navbar
+                      imageSrc={image}
+                      fileName={fileName}
+                      onImageChange={handleImageChange}
+                      onImageReset={handleImageReset}
+                      selectedView={selectedView}
+                      onViewChange={handleViewChange}
+                      onExport={handleExport}
+                      disabled={disabled}
+                    />
+                  </div>
+
+                  {lastAction && (
+                    <p style={{ 
+                      fontSize: '13px', 
+                      color: 'var(--content-secondary)', 
+                      margin: 0,
+                      textAlign: 'center',
+                      padding: 'var(--spacing-200)',
+                      background: 'var(--surface-ground)',
+                      borderRadius: 'var(--radius-md)'
+                    }}>
+                      Last action: <strong>{lastAction}</strong>
+                    </p>
+                  )}
+
+                  {/* Controls Sidebar */}
+                  <div style={{
+                    display: 'flex',
+                    gap: 'var(--spacing-400)',
+                    padding: 'var(--spacing-600)',
+                    background: 'var(--surface-below)',
+                    borderRadius: 'var(--radius-lg)',
+                    flexWrap: 'wrap'
+                  }}>
+                    <div className="sidebar-section" style={{ flex: '1 1 200px' }}>
+                      <label className="section-label">Component State</label>
+                      <SegmentedControl
+                        items={[
+                          { value: 'enabled', label: 'Enabled' },
+                          { value: 'disabled', label: 'Disabled' }
+                        ]}
+                        value={disabled ? 'disabled' : 'enabled'}
+                        onChange={(val) => setDisabled(val === 'disabled')}
+                      />
+                    </div>
+
+                    <div className="sidebar-section" style={{ flex: '1 1 200px' }}>
+                      <label className="section-label">Quick Actions</label>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <Button
+                          variant="outline"
+                          label="Load Random Image"
+                          onClick={() => {
+                            const randomId = Math.floor(Math.random() * 1000);
+                            setImage(`https://picsum.photos/200/200?random=${randomId}`);
+                            setFileName(`random_${randomId}.jpg`);
+                            setLastAction('Random image loaded');
+                          }}
+                          fullWidth
+                        />
+                        <Button
+                          variant="outline"
+                          label="Switch to Free"
+                          onClick={() => handleViewChange('free')}
+                          fullWidth
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Usage Example */}
+              <div className="variant-group">
+                <h4>Full Width Example</h4>
+                <div style={{ 
+                  width: '100%',
+                  background: 'var(--surface-below)',
+                  padding: '24px',
+                  borderRadius: 'var(--radius-lg)',
+                  overflow: 'auto'
+                }}>
+                  <Navbar
+                    imageSrc="https://picsum.photos/200/200?random=11"
+                    fileName="example_project.jpg"
+                    selectedView="palette"
+                    onImageChange={(file, url) => console.log('Image changed:', file.name)}
+                    onImageReset={() => console.log('Image reset')}
+                    onViewChange={(view) => console.log('View changed:', view)}
+                    onExport={() => console.log('Export clicked')}
+                  />
+                </div>
+              </div>
+            </div>
+          );
+        };
+
+        // Render the demo
+        const navbarRoot = ReactDOM.createRoot(document.getElementById('navbar-demo-root'));
+        navbarRoot.render(<NavbarDemo />);
+    </script>
+</body>
+</html>

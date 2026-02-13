@@ -1,0 +1,375 @@
+/**
+ * Knob Component Styles
+ * 3-layer elevated design (same as Button):
+ *   Root (gradient frame) → Outer (elevated surface) → Inner (content surface)
+ * Circular variant with rotating indicator bar.
+ * Accent-lit dot ring around perimeter.
+ */
+
+/* ═══════════════════════════════════════════════
+   Component wrapper
+   ═══════════════════════════════════════════════ */
+
+.knob-component {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-100); /* 4px between knob and value field */
+  width: 100%;
+  -webkit-user-select: none;
+  user-select: none;
+  font-family: 'Alpha Lyrae', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.knob-component.disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* ═══════════════════════════════════════════════
+   Knob body: contains dots + handle
+   ═══════════════════════════════════════════════ */
+
+.knob-body {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ═══════════════════════════════════════════════
+   Dot ring (SVG)
+   ═══════════════════════════════════════════════ */
+
+.knob-dots {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* Spring: stiffness 1080, damping 48, mass 1 → underdamped ~250ms */
+.knob-dots .dot-unlit {
+  fill: var(--surface-profound);
+  transition: fill 250ms cubic-bezier(0.25, 1.05, 0.45, 1.0);
+}
+
+.knob-dots .dot-lit {
+  fill: var(--accent);
+  transition: fill 250ms cubic-bezier(0.25, 1.05, 0.45, 1.0);
+}
+
+/* ═══════════════════════════════════════════════
+   Root: Gradient frame (circular, same tokens as Button)
+   ═══════════════════════════════════════════════ */
+
+.knob-handle {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  padding: var(--spacing-025); /* 1px */
+  border-radius: var(--radius-full);
+  box-shadow: 0px 1px 0px 0px var(--outer-bottom-light);
+  background: linear-gradient(
+    180deg,
+    var(--fake-drop-shadow) 0%,
+    var(--surface-profound) 6%,
+    var(--surface-profound) 47%,
+    var(--fake-drop-shadow) 99%
+  );
+  overflow: visible;
+  cursor: grab;
+  z-index: 3;
+  outline: none;
+}
+
+.knob-handle:active,
+.knob-component.dragging .knob-handle {
+  cursor: grabbing;
+}
+
+/* Focus ring */
+.knob-handle:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+/* ═══════════════════════════════════════════════
+   Outer: Elevated surface (circular)
+   ═══════════════════════════════════════════════ */
+
+.knob-outer {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  padding-bottom: var(--spacing-200); /* 8px */
+  border-radius: var(--radius-full);
+  background: var(--surface-below);
+  overflow: visible;
+  position: relative;
+
+  /* High elevation shadow (same as Button outer) */
+  box-shadow:
+    0px 3.487px 6.974px 0px rgba(0, 0, 0, 0.16),
+    0px 9.432px 18.864px 0px rgba(0, 0, 0, 0.13),
+    0px 16px 32px 0px rgba(0, 0, 0, 0.09),
+    0px 22.567px 45.134px 0px rgba(0, 0, 0, 0.05),
+    0px 28.513px 57.026px 0px rgba(0, 0, 0, 0.02),
+    0px 32px 64px 0px rgba(0, 0, 0, 0);
+}
+
+/* Depth gradient on the outer surface */
+.knob-outer::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 50%;
+  border-radius: 0 0 var(--radius-full) var(--radius-full);
+  background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.04) 100%);
+  pointer-events: none;
+}
+
+/* ═══════════════════════════════════════════════
+   Inner: Content surface (circular knob face)
+   ═══════════════════════════════════════════════ */
+
+.knob-inner {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-full);
+  background: var(--surface-ground);
+  position: relative;
+  overflow: clip;
+  flex-shrink: 0;
+}
+
+/* Inner top-light shadow */
+.knob-inner::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0px 1px 0px 0px var(--inner-top-light);
+  pointer-events: none;
+}
+
+/* ═══════════════════════════════════════════════
+   Indicator: Rotating bar
+   Light/shadow stay fixed — only bar rotates.
+   ═══════════════════════════════════════════════ */
+
+.knob-indicator {
+  position: absolute;
+  inset: 0;
+  /* transform: rotate(Xdeg) set via inline style */
+}
+
+.knob-bar {
+  position: absolute;
+  top: 4px;
+  left: calc(50% - 1px);
+  width: 2px;
+  height: 12px;
+  border-radius: var(--radius-full);
+  background: var(--surface-bottomless);
+  box-shadow: 0px 1px 0px 0px var(--inner-top-light);
+  transition: background 250ms cubic-bezier(0.25, 1.05, 0.45, 1.0);
+}
+
+/* Bar inset shadow */
+.knob-bar::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0px 1px 0px 0px var(--inner-shadow);
+  pointer-events: none;
+}
+
+/* Hover / dragging: bar turns accent */
+.knob-component:hover .knob-bar,
+.knob-component.dragging .knob-bar {
+  background: var(--accent);
+}
+
+/* ═══════════════════════════════════════════════
+   Value field (below knob)
+   Rest: label on surface-ground
+   Hover: editable value on surface-above with shadows
+   ═══════════════════════════════════════════════ */
+
+.knob-value-field {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-150); /* 6px all around */
+  gap: var(--spacing-150); /* 6px between contents */
+  border-radius: var(--radius-sm);
+  background: var(--surface-ground);
+  min-height: 24px;
+  width: fit-content;
+  box-shadow: none;
+  transition:
+    background 250ms cubic-bezier(0.25, 1.05, 0.45, 1.0),
+    box-shadow 250ms cubic-bezier(0.25, 1.05, 0.45, 1.0);
+}
+
+/* Active (hover/drag): debossed look */
+.knob-value-field.active {
+  background: var(--surface-above);
+  box-shadow:
+    inset 0px 1px 0px 0px var(--inner-top-light),
+    inset 0px -1px 0px 0px var(--inner-shadow);
+}
+
+/* ═══════════════════════════════════════════════
+   Value field – two-layer crossfade
+   Label layer (rest) ↔ Value layer (hover/drag)
+   ═══════════════════════════════════════════════ */
+
+/* Label layer — absolutely centered, visible at rest */
+.knob-label-layer {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 16px;
+  color: var(--content-primary);
+  text-shadow: 0px 1px 0px var(--outer-bottom-light);
+  text-align: center;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 150ms cubic-bezier(0.25, 1.05, 0.45, 1.0);
+}
+
+.knob-value-field.active .knob-label-layer {
+  opacity: 0;
+}
+
+/* Value layer — contents flow naturally, gap inherited from parent */
+.knob-value-layer {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-150); /* 6px between value container and reset */
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 150ms 50ms cubic-bezier(0.25, 1.05, 0.45, 1.0);
+}
+
+.knob-value-field.active .knob-value-layer {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Value content wrapper — fixed 48px, value + suffix centered with 2px gap */
+.knob-value-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  gap: var(--spacing-050); /* 2px between value and suffix */
+}
+
+/* Shared text style for value text */
+.knob-value-text {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 16px;
+  color: var(--content-primary);
+  text-shadow: 0px 1px 0px var(--outer-bottom-light);
+  text-align: center;
+  white-space: nowrap;
+  cursor: text;
+}
+
+/* Edit input */
+.knob-edit-input {
+  width: 100%;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  outline: none;
+  padding: 0;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 16px;
+  color: var(--content-primary);
+  text-shadow: 0px 1px 0px var(--outer-bottom-light);
+  text-align: center;
+}
+
+.knob-edit-input::placeholder {
+  color: var(--content-secondary);
+  opacity: 0.6;
+}
+
+/* Non-editable suffix (e.g. %) */
+.knob-suffix {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 16px;
+  color: var(--content-secondary);
+  text-shadow: 0px 1px 0px var(--outer-bottom-light);
+  pointer-events: none;
+  user-select: none;
+}
+
+/* ═══════════════════════════════════════════════
+   Reset icon button
+   ═══════════════════════════════════════════════ */
+
+.knob-reset {
+  -webkit-appearance: none;
+  appearance: none;
+  border: none;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.knob-reset svg,
+.knob-reset img {
+  width: 16px;
+  height: 16px;
+  display: block;
+  opacity: 0.4;
+  transition: opacity 150ms cubic-bezier(0.25, 1, 0.45, 1), filter 150ms cubic-bezier(0.25, 1, 0.45, 1);
+}
+
+/* Hover: full opacity → icon matches --content-primary (dark mode filter handles invert) */
+.knob-reset:hover svg,
+.knob-reset:hover img {
+  opacity: 1;
+  filter: brightness(0); /* force to black = --content-primary in light mode */
+}
+
+/* Dark mode hover: invert to white = --content-primary in dark mode */
+html.dark-mode .knob-reset:hover img,
+.dark-mode .knob-reset:hover img {
+  filter: brightness(0) invert(1);
+}
+
+@media (prefers-color-scheme: dark) {
+  html:not(.light-mode) .knob-reset:hover img {
+    filter: brightness(0) invert(1);
+  }
+}
