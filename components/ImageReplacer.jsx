@@ -55,9 +55,9 @@ const ImageReplacer = ({
     return name.substring(0, 29) + '...';
   };
 
-  // Reset icon component - using Icons/reset.svg
-  const ResetIcon = () => (
-    <img src="Icons/reset.svg" alt="" width="16" height="16" style={{display: 'block'}} />
+  // Replace icon component - using Icons/replace.svg
+  const ReplaceIcon = () => (
+    <img src="Icons/replace.svg" alt="" width="16" height="16" style={{display: 'block'}} />
   );
 
   const handleClick = () => {
@@ -143,9 +143,9 @@ const ImageReplacer = ({
           onClick={handleReset}
           disabled={disabled}
           type="button"
-          aria-label="Reset image"
+          aria-label="Replace image"
         >
-          <ResetIcon />
+          <ReplaceIcon />
         </button>
       )}
 

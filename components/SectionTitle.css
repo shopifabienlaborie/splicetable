@@ -58,3 +58,8 @@
 .section-title-component.closed .section-title-icon {
     transform: rotate(-90deg);
 }
+
+/* ─── Level 2: back icon on left, no collapse ──── */
+.section-title-component.level-2 .section-title-icon {
+    transform: none;
+}

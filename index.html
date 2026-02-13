@@ -28,82 +28,102 @@
         <!-- Sidebar wrapper -->
     <div class="sidebar-wrapper">
         <div class="sidebar">
-            <!-- Section 1: Canvas (Background) -->
-            <div class="sidebar-section section-canvas" id="contentControls">
-                <div id="sectionTitle-canvas-root"></div>
-                <div class="section-content">
-                    <!-- Control: Background — wraps ratio + bg type row + color/image content -->
-                    <div id="backgroundControl-root"></div>
-                </div>
-            </div>
-
-            <!-- Divider -->
-            <div id="divider1-root"></div>
-
-            <!-- Section 2: Global (Material + Splicer + Knobs) -->
-            <div class="sidebar-section section-global" id="globalControls">
-                <div id="sectionTitle-global-root"></div>
-                <div class="section-content section-content-wide">
-                    <!-- Control: Material -->
-                    <div id="materialControl-root"></div>
-
-                    <!-- Control: Splicer -->
-                    <div id="splicerControl-root"></div>
-
-                    <!-- Knobs grid: Scale, Size, Spread, Tumble -->
-                    <div id="globalKnobsGrid" class="knobs-grid cols-2">
-                        <div id="canvasScale-root"></div>
-                        <div id="sizeGroup"><div id="cellSize-root"></div></div>
-                        <div id="spreadGroup"><div id="cellSpread-root"></div></div>
-                        <div id="tumbleGroup"><div id="cellTumble-root"></div></div>
+          <div class="sidebar-panels" id="sidebarPanels">
+            <!-- Panel 1: Main controls -->
+            <div class="sidebar-panel panel-1">
+                <!-- Section 1: Canvas (Background) -->
+                <div class="sidebar-section section-canvas" id="contentControls">
+                    <div id="sectionTitle-canvas-root"></div>
+                    <div class="section-content">
+                        <!-- Control: Background — wraps ratio + bg type row + color/image content -->
+                        <div id="backgroundControl-root"></div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Divider -->
-            <div id="divider2-root"></div>
+                <!-- Divider -->
+                <div id="divider1-root"></div>
 
-            <!-- Section 3: Cells -->
-            <div class="sidebar-section section-cells" id="cellControls">
-                <div id="sectionTitle-cells-root"></div>
-                <div class="section-content section-content-wide">
-                    <!-- Control: Cell (Fill/Fit) - only for Image content -->
-                    <div id="cellFitGroup" style="display: none;">
-                        <div id="cellControl-root"></div>
-                    </div>
+                <!-- Section 2: Global (Material + Splicer + Knobs) -->
+                <div class="sidebar-section section-global" id="globalControls">
+                    <div id="sectionTitle-global-root"></div>
+                    <div class="section-content section-content-wide">
+                        <!-- Control: Material -->
+                        <div id="materialControl-root"></div>
 
-                    <!-- Knobs grid: Count, Radius, Chaos -->
-                    <div id="cellsKnobsGrid" class="knobs-grid cols-2">
-                        <div id="cellCount-root"></div>
-                        <div id="radiusGroup"><div id="cellRadius-root"></div></div>
-                        <div id="chaosGroup" style="display: none;"><div id="chaos-root"></div></div>
-                    </div>
+                        <!-- Control: Splicer -->
+                        <div id="splicerControl-root"></div>
 
-                    <!-- Dimensions W/H/Lock - only for Scatter layout -->
-                    <div id="dimensionsGroup" style="display: none;">
-                        <div class="knobs-grid dimensions-grid">
-                            <div id="cellWidth-root"></div>
-                            <div id="lockAspectBtn-root" class="lock-btn-container"></div>
-                            <div id="cellHeight-root"></div>
+                        <!-- Knobs grid: Scale, Size, Spread, Tumble -->
+                        <div id="globalKnobsGrid" class="knobs-grid cols-2">
+                            <div id="canvasScale-root"></div>
+                            <div id="sizeGroup"><div id="cellSize-root"></div></div>
+                            <div id="spreadGroup"><div id="cellSpread-root"></div></div>
+                            <div id="tumbleGroup"><div id="cellTumble-root"></div></div>
                         </div>
-                        <p class="hint-text" id="scatterHint">Select one to edit individually</p>
+                    </div>
+                </div>
+
+                <!-- Divider -->
+                <div id="divider2-root"></div>
+
+                <!-- Section 3: Cells -->
+                <div class="sidebar-section section-cells" id="cellControls">
+                    <div id="sectionTitle-cells-root"></div>
+                    <div class="section-content section-content-wide">
+                        <!-- Control: Cell (Fill/Fit) - only for Image content -->
+                        <div id="cellFitGroup" style="display: none;">
+                            <div id="cellControl-root"></div>
+                        </div>
+
+                        <!-- Knobs grid: Count, Radius, Chaos -->
+                        <div id="cellsKnobsGrid" class="knobs-grid cols-2">
+                            <div id="cellCount-root"></div>
+                            <div id="radiusGroup"><div id="cellRadius-root"></div></div>
+                            <div id="chaosGroup" style="display: none;"><div id="chaos-root"></div></div>
+                        </div>
+
+                        <!-- Dimensions W/H/Lock - only for Scatter layout -->
+                        <div id="dimensionsGroup" style="display: none;">
+                            <div class="knobs-grid dimensions-grid">
+                                <div id="cellWidth-root"></div>
+                                <div id="lockAspectBtn-root" class="lock-btn-container"></div>
+                                <div id="cellHeight-root"></div>
+                            </div>
+                            <p class="hint-text" id="scatterHint">Select one to edit individually</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Divider -->
+                <div id="divider3-root"></div>
+
+                <!-- Section 4: Export -->
+                <div class="sidebar-section section-export" id="exportControls">
+                    <div id="sectionTitle-export-root"></div>
+                    <div class="section-content">
+                        <div class="export-row">
+                            <div class="export-scale-select" id="exportScale-root"></div>
+                            <div id="exportBtn-root"></div>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Divider -->
-            <div id="divider3-root"></div>
-
-            <!-- Section 4: Export -->
-            <div class="sidebar-section section-export" id="exportControls">
-                <div id="sectionTitle-export-root"></div>
-                <div class="section-content">
-                    <div class="export-row">
-                        <div class="export-scale-select" id="exportScale-root"></div>
-                        <div id="exportBtn-root"></div>
+            <!-- Panel 2: Cell detail -->
+            <div class="sidebar-panel panel-2">
+                <div class="sidebar-section">
+                    <div id="cellDetail-sectionTitle-root"></div>
+                    <div class="section-content section-content-wide">
+                        <div class="knobs-grid dimensions-grid">
+                            <div id="cellDetail-width-root"></div>
+                            <div id="cellDetail-lock-root" class="lock-btn-container"></div>
+                            <div id="cellDetail-height-root"></div>
+                        </div>
+                        <div id="cellDetail-resetOverride-root"></div>
                     </div>
                 </div>
             </div>
+          </div>
         </div>
     </div>
 
@@ -775,6 +795,214 @@
                     />
                 );
             }
+            
+            // ─── Cell Detail Panel (Panel 2) ──────────────────────
+            if (app.selectedCellIndex !== null) {
+                const cellIdx = app.selectedCellIndex;
+                const cellLabel = `Cell ${cellIdx + 1}`;
+                
+                // Section title with back navigation
+                if (window.sidebarRoots.cellDetailTitle) {
+                    window.sidebarRoots.cellDetailTitle.render(
+                        <SectionTitle
+                            label={cellLabel}
+                            level={2}
+                            onClick={() => app.deselectCell()}
+                        />
+                    );
+                }
+                
+                // Lock aspect ratio button (shared by both modes)
+                if (window.sidebarRoots.cellDetailLock) {
+                    window.sidebarRoots.cellDetailLock.render(
+                        <React.Fragment>
+                            <Button
+                                variant="outline"
+                                iconBefore={app.cellDetailAspectLocked ? <LockLockedIcon /> : <LockUnlockedIcon />}
+                                label=""
+                                className="lock-aspect-button"
+                                onClick={() => {
+                                    app.cellDetailAspectLocked = !app.cellDetailAspectLocked;
+                                    // Store current aspect ratio when locking
+                                    if (app.cellDetailAspectLocked) {
+                                        if (isGrid) {
+                                            const _col = cellIdx % app.gridSize;
+                                            const _row = Math.floor(cellIdx / app.gridSize);
+                                            const _tw = app.columnWidths.reduce((a, b) => a + b, 0);
+                                            const _th = app.rowHeights.reduce((a, b) => a + b, 0);
+                                            const _wp = (app.columnWidths[_col] / _tw) * 100;
+                                            const _hp = (app.rowHeights[_row] / _th) * 100;
+                                            app.cellDetailLastAspectRatio = _wp / _hp;
+                                        } else {
+                                            const _cd = app.freestyleCells[cellIdx];
+                                            if (_cd) app.cellDetailLastAspectRatio = _cd.width / _cd.height;
+                                        }
+                                    }
+                                    window.updateSidebarComponents(app);
+                                }}
+                            />
+                            <span className={`lock-active-dot ${app.cellDetailAspectLocked ? 'engaged' : ''}`} />
+                        </React.Fragment>
+                    );
+                }
+                
+                if (isGrid) {
+                    // ── Stretch mode: Width / Height bound to column/row weights ──
+                    const col = cellIdx % app.gridSize;
+                    const row = Math.floor(cellIdx / app.gridSize);
+                    
+                    const totalColWeight = app.columnWidths.reduce((a, b) => a + b, 0);
+                    const totalRowWeight = app.rowHeights.reduce((a, b) => a + b, 0);
+                    
+                    const colPercent = Math.round((app.columnWidths[col] / totalColWeight) * 100);
+                    const rowPercent = Math.round((app.rowHeights[row] / totalRowWeight) * 100);
+                    
+                    if (window.sidebarRoots.cellDetailWidth) {
+                        window.sidebarRoots.cellDetailWidth.render(
+                            <Knob
+                                label="Width"
+                                min={5}
+                                max={95}
+                                step={1}
+                                value={colPercent}
+                                showPercentage={true}
+                                onChange={(value) => {
+                                    const otherColWeights = app.columnWidths.filter((_, i) => i !== col);
+                                    const sumOtherCol = otherColWeights.reduce((a, b) => a + b, 0);
+                                    const pct = Math.max(5, Math.min(95, value)) / 100;
+                                    app.columnWidths[col] = (pct * sumOtherCol) / (1 - pct);
+                                    
+                                    // If locked, adjust row height proportionally
+                                    if (app.cellDetailAspectLocked && app.cellDetailLastAspectRatio) {
+                                        const newRowPct = Math.max(5, Math.min(95, value / app.cellDetailLastAspectRatio));
+                                        const otherRowWeights = app.rowHeights.filter((_, i) => i !== row);
+                                        const sumOtherRow = otherRowWeights.reduce((a, b) => a + b, 0);
+                                        const rPct = newRowPct / 100;
+                                        app.rowHeights[row] = (rPct * sumOtherRow) / (1 - rPct);
+                                    }
+                                    
+                                    app.updateLayoutStyles();
+                                    app.scheduleRender();
+                                    app.scheduleSidebarUpdate();
+                                }}
+                            />
+                        );
+                    }
+                    
+                    if (window.sidebarRoots.cellDetailHeight) {
+                        window.sidebarRoots.cellDetailHeight.render(
+                            <Knob
+                                label="Height"
+                                min={5}
+                                max={95}
+                                step={1}
+                                value={rowPercent}
+                                showPercentage={true}
+                                onChange={(value) => {
+                                    const otherRowWeights = app.rowHeights.filter((_, i) => i !== row);
+                                    const sumOtherRow = otherRowWeights.reduce((a, b) => a + b, 0);
+                                    const pct = Math.max(5, Math.min(95, value)) / 100;
+                                    app.rowHeights[row] = (pct * sumOtherRow) / (1 - pct);
+                                    
+                                    // If locked, adjust column width proportionally
+                                    if (app.cellDetailAspectLocked && app.cellDetailLastAspectRatio) {
+                                        const newColPct = Math.max(5, Math.min(95, value * app.cellDetailLastAspectRatio));
+                                        const otherColWeights = app.columnWidths.filter((_, i) => i !== col);
+                                        const sumOtherCol = otherColWeights.reduce((a, b) => a + b, 0);
+                                        const cPct = newColPct / 100;
+                                        app.columnWidths[col] = (cPct * sumOtherCol) / (1 - cPct);
+                                    }
+                                    
+                                    app.updateLayoutStyles();
+                                    app.scheduleRender();
+                                    app.scheduleSidebarUpdate();
+                                }}
+                            />
+                        );
+                    }
+                    
+                    // Stretch mode: no reset button — clear the root
+                    if (window.sidebarRoots.cellDetailReset) {
+                        window.sidebarRoots.cellDetailReset.render(null);
+                    }
+                } else {
+                    // ── Scatter mode: Width / Height bound to individual cell dimensions ──
+                    const cellData = app.freestyleCells[cellIdx];
+                    const cellW = cellData ? Math.round(cellData.width) : 100;
+                    const cellH = cellData ? Math.round(cellData.height) : 100;
+                    
+                    if (window.sidebarRoots.cellDetailWidth) {
+                        window.sidebarRoots.cellDetailWidth.render(
+                            <Knob
+                                label="Width"
+                                min={10}
+                                max={500}
+                                step={1}
+                                value={cellW}
+                                onChange={(value) => {
+                                    if (cellData) {
+                                        app.selectedCellIndex = cellIdx;
+                                        let newH = cellData.height;
+                                        // If locked, adjust height proportionally
+                                        if (app.cellDetailAspectLocked && app.cellDetailLastAspectRatio) {
+                                            newH = Math.max(10, Math.min(500, Math.round(value / app.cellDetailLastAspectRatio)));
+                                        }
+                                        app.applyCellDimensions(value, newH);
+                                        app.scheduleSidebarUpdate();
+                                    }
+                                }}
+                            />
+                        );
+                    }
+                    
+                    if (window.sidebarRoots.cellDetailHeight) {
+                        window.sidebarRoots.cellDetailHeight.render(
+                            <Knob
+                                label="Height"
+                                min={10}
+                                max={500}
+                                step={1}
+                                value={cellH}
+                                onChange={(value) => {
+                                    if (cellData) {
+                                        app.selectedCellIndex = cellIdx;
+                                        let newW = cellData.width;
+                                        // If locked, adjust width proportionally
+                                        if (app.cellDetailAspectLocked && app.cellDetailLastAspectRatio) {
+                                            newW = Math.max(10, Math.min(500, Math.round(value * app.cellDetailLastAspectRatio)));
+                                        }
+                                        app.applyCellDimensions(newW, value);
+                                        app.scheduleSidebarUpdate();
+                                    }
+                                }}
+                            />
+                        );
+                    }
+                    
+                    // Reset override button (Scatter only)
+                    if (window.sidebarRoots.cellDetailReset) {
+                        window.sidebarRoots.cellDetailReset.render(
+                            <Button
+                                variant="outline"
+                                label="Reset override"
+                                iconBefore={<ResetIcon />}
+                                fullWidth={true}
+                                onClick={() => {
+                                    // Find default dimensions from a non-modified sibling
+                                    const sibling = app.freestyleCells.find((c, i) => i !== cellIdx && !c.individuallyModified);
+                                    if (sibling && cellData) {
+                                        app.selectedCellIndex = cellIdx;
+                                        app.applyCellDimensions(sibling.width, sibling.height);
+                                        cellData.individuallyModified = false;
+                                    }
+                                    // Navigate back
+                                    app.deselectCell();
+                                }}
+                            />
+                        );
+                    }
+                }
+            }
         };
         
         // Wait for all components to be loaded
@@ -939,6 +1167,13 @@
             // Export section
             window.sidebarRoots.exportScale = ReactDOM.createRoot(document.getElementById('exportScale-root'));
             window.sidebarRoots.exportBtn = ReactDOM.createRoot(document.getElementById('exportBtn-root'));
+            
+            // Cell detail panel (Panel 2)
+            window.sidebarRoots.cellDetailTitle = ReactDOM.createRoot(document.getElementById('cellDetail-sectionTitle-root'));
+            window.sidebarRoots.cellDetailWidth = ReactDOM.createRoot(document.getElementById('cellDetail-width-root'));
+            window.sidebarRoots.cellDetailLock = ReactDOM.createRoot(document.getElementById('cellDetail-lock-root'));
+            window.sidebarRoots.cellDetailHeight = ReactDOM.createRoot(document.getElementById('cellDetail-height-root'));
+            window.sidebarRoots.cellDetailReset = ReactDOM.createRoot(document.getElementById('cellDetail-resetOverride-root'));
             
             // Divider roots
             window.sidebarRoots.divider1 = ReactDOM.createRoot(document.getElementById('divider1-root'));

@@ -1518,16 +1518,28 @@
                             <td>Section name displayed</td>
                         </tr>
                         <tr>
+                            <td><code>level</code></td>
+                            <td><code>number</code></td>
+                            <td><code>1</code></td>
+                            <td>Variant level. <code>1</code>: collapsible with chevron on right. <code>2</code>: back icon on left, no collapse.</td>
+                        </tr>
+                        <tr>
                             <td><code>defaultOpened</code></td>
                             <td><code>boolean</code></td>
                             <td><code>true</code></td>
-                            <td>Initial collapsed state</td>
+                            <td>Initial collapsed state (Level 1 only)</td>
                         </tr>
                         <tr>
                             <td><code>onToggle</code></td>
                             <td><code>fn(opened: boolean)</code></td>
                             <td><code>undefined</code></td>
-                            <td>Called after toggling, receives new opened state</td>
+                            <td>Called after toggling, receives new opened state (Level 1 only)</td>
+                        </tr>
+                        <tr>
+                            <td><code>onClick</code></td>
+                            <td><code>fn()</code></td>
+                            <td><code>undefined</code></td>
+                            <td>Called on click (Level 2 only, e.g. navigate back)</td>
                         </tr>
                         <tr>
                             <td><code>className</code></td>
@@ -1540,10 +1552,18 @@
 
                 <div class="code-example">
                     <h4>React JSX</h4>
-                    <pre><code>&lt;SectionTitle
+                    <pre><code>{/* Level 1 — Collapsible (default) */}
+&lt;SectionTitle
   label="Canvas"
   defaultOpened={true}
   onToggle={(opened) =&gt; console.log(opened)}
+/&gt;
+
+{/* Level 2 — Back navigation */}
+&lt;SectionTitle
+  label="Canvas"
+  level={2}
+  onClick={() =&gt; console.log('back')}
 /&gt;</code></pre>
                 </div>
 
@@ -2019,9 +2039,9 @@
             return name.substring(0, 29) + '...';
           };
 
-          // Reset icon component - using Icons/reset.svg
-          const ResetIcon = () => (
-            <img src="Icons/reset.svg" alt="" width="16" height="16" style={{display: 'block'}} />
+          // Replace icon component - using Icons/replace.svg
+          const ReplaceIcon = () => (
+            <img src="Icons/replace.svg" alt="" width="16" height="16" style={{display: 'block'}} />
           );
 
           const handleClick = () => {
@@ -2107,9 +2127,9 @@
                   onClick={handleReset}
                   disabled={disabled}
                   type="button"
-                  aria-label="Reset image"
+                  aria-label="Replace image"
                 >
-                  <ResetIcon />
+                  <ReplaceIcon />
                 </button>
               )}
 
@@ -2554,15 +2574,23 @@
         const { useState } = React;
 
         // Inline SectionTitle for design-system demo
+        // Level 1 (default): label on left, chevron on right
         const SectionTitle = ({
           label = 'Section title',
+          level = 1,
           defaultOpened = true,
           onToggle,
+          onClick,
           className = ''
         }) => {
           const [opened, setOpened] = useState(defaultOpened);
 
           const handleClick = () => {
+            if (level === 2) {
+              // Level 2 doesn't toggle — it fires onClick (e.g. navigate back)
+              if (onClick) onClick();
+              return;
+            }
             const next = !opened;
             setOpened(next);
             if (onToggle) onToggle(next);
@@ -2584,6 +2612,30 @@
             </svg>
           );
 
+          const BackIcon = () => (
+            <img src="Icons/back.svg" alt="" width="16" height="16" style={{display: 'block'}} />
+          );
+
+          // Level 2: back icon on left, label on right, no chevron
+          if (level === 2) {
+            return (
+              <div
+                className={`section-title-component level-2 ${className}`}
+                onClick={handleClick}
+                onKeyDown={handleKeyDown}
+                role="button"
+                tabIndex={0}
+                aria-label={label}
+              >
+                <div className="section-title-icon">
+                  <BackIcon />
+                </div>
+                <span className="section-title-label">{label}</span>
+              </div>
+            );
+          }
+
+          // Level 1 (default): label on left, chevron on right
           return (
             <div
               className={`section-title-component ${opened ? 'opened' : 'closed'} ${className}`}
@@ -2606,14 +2658,14 @@
         const SectionTitleDemo = () => {
           const [log, setLog] = useState([]);
 
-          const addLog = (label, opened) => {
-            setLog(prev => [`${label}: ${opened ? 'opened' : 'closed'}`, ...prev].slice(0, 5));
+          const addLog = (label, msg) => {
+            setLog(prev => [`${label}: ${msg}`, ...prev].slice(0, 5));
           };
 
           return (
             <div>
               <div className="variant-group">
-                <h4>Interactive Preview</h4>
+                <h4>Level 1 — Collapsible sections</h4>
                 <div className="variant-examples" style={{
                   display: 'flex',
                   flexDirection: 'column',
@@ -2628,7 +2680,7 @@
                     <SectionTitle
                       label="Canvas"
                       defaultOpened={true}
-                      onToggle={(opened) => addLog('Canvas', opened)}
+                      onToggle={(opened) => addLog('Canvas', opened ? 'opened' : 'closed')}
                     />
                   </div>
 
@@ -2639,7 +2691,7 @@
                     <SectionTitle
                       label="Adjustments"
                       defaultOpened={false}
-                      onToggle={(opened) => addLog('Adjustments', opened)}
+                      onToggle={(opened) => addLog('Adjustments', opened ? 'opened' : 'closed')}
                     />
                   </div>
 
@@ -2650,7 +2702,38 @@
                     <SectionTitle
                       label="Cells"
                       defaultOpened={true}
-                      onToggle={(opened) => addLog('Cells', opened)}
+                      onToggle={(opened) => addLog('Cells', opened ? 'opened' : 'closed')}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="variant-group" style={{ marginTop: 'var(--spacing-500)' }}>
+                <h4>Level 2 — Back navigation</h4>
+                <div className="variant-examples" style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '0',
+                  padding: '0',
+                  background: 'var(--surface-ground)',
+                  borderRadius: 'var(--radius-lg)',
+                  overflow: 'hidden'
+                }}>
+                  <div style={{ padding: 'var(--spacing-300)' }}>
+                    <SectionTitle
+                      label="Canvas"
+                      level={2}
+                      onClick={() => addLog('Canvas', 'back clicked')}
+                    />
+                  </div>
+
+                  <div style={{ height: '1px', background: 'var(--surface-below)' }} />
+
+                  <div style={{ padding: 'var(--spacing-300)' }}>
+                    <SectionTitle
+                      label="Adjustments"
+                      level={2}
+                      onClick={() => addLog('Adjustments', 'back clicked')}
                     />
                   </div>
                 </div>
@@ -2658,7 +2741,7 @@
 
               {log.length > 0 && (
                 <div style={{ marginTop: 'var(--spacing-300)', fontSize: '12px', color: 'var(--content-secondary)' }}>
-                  <strong>Toggle log:</strong>{' '}
+                  <strong>Event log:</strong>{' '}
                   {log.map((entry, i) => <span key={i} style={{ marginRight: '8px' }}>{entry}</span>)}
                 </div>
               )}

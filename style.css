@@ -260,7 +260,7 @@ body {
     top: 56px; /* Below navbar visual bottom; wrapper's own 2px padding creates the gap */
     left: 0;
     bottom: 0;
-    width: 292px; /* 288px + 2px padding on each side */
+    width: 324px; /* 320px + 2px padding on each side */
     padding: var(--spacing-050); /* 2px padding */
     background: transparent;
     display: none;
@@ -279,39 +279,62 @@ body {
     display: flex;
     flex-direction: column;
     gap: 0;
-    padding: var(--spacing-100) 0; /* 4px top/bottom */
-    overflow-y: auto;
-    overflow-x: hidden;
+    overflow: hidden; /* panels handle their own scrolling */
     flex-shrink: 0;
-    scrollbar-gutter: stable; /* always reserve scrollbar space — content width never shifts */
     box-shadow: 
         0px 1px 7px 0px rgba(0, 0, 0, 0.04),
         inset 0px 1px 0px 0px var(--inner-top-light),
         inset 0px -1px 0px 0px var(--inner-shadow);
 }
 
-/* Thin scrollbar — gutter is always reserved so content never shifts */
-.sidebar::-webkit-scrollbar {
+/* Scrollbar styling moved to .sidebar-panel (each panel scrolls independently) */
+
+/* ─── Dual-panel sliding container ─────────────── */
+.sidebar-panels {
+    display: flex;
+    flex-direction: row;
+    width: 200%;
+    height: 100%;
+    transition: transform 300ms cubic-bezier(0.25, 1.05, 0.45, 1.0);
+}
+
+.sidebar-panels.show-panel-2 {
+    transform: translateX(-50%);
+}
+
+.sidebar-panel {
+    width: 50%; /* each panel fills the sidebar width */
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: var(--spacing-100) 0; /* 4px top/bottom — moved from .sidebar */
+    scrollbar-gutter: stable;
+}
+
+/* Thin scrollbar on panels */
+.sidebar-panel::-webkit-scrollbar {
     width: 6px;
     background: transparent;
 }
 
-.sidebar::-webkit-scrollbar-track {
+.sidebar-panel::-webkit-scrollbar-track {
     background: transparent;
-    margin: var(--radius-md) 0; /* respect border-radius */
+    margin: var(--radius-md) 0;
 }
 
-.sidebar::-webkit-scrollbar-thumb {
+.sidebar-panel::-webkit-scrollbar-thumb {
     background: var(--border-default);
     border-radius: var(--radius-full);
 }
 
-.sidebar::-webkit-scrollbar-thumb:hover {
+.sidebar-panel::-webkit-scrollbar-thumb:hover {
     background: var(--content-secondary);
 }
 
 /* Firefox thin scrollbar */
-.sidebar {
+.sidebar-panel {
     scrollbar-width: thin;
     scrollbar-color: var(--border-default) transparent;
 }
@@ -336,6 +359,11 @@ body {
 /* Wide-gap variant for Global and Cells sections */
 .section-content-wide {
     gap: var(--spacing-500); /* 20px */
+}
+
+/* Extra top padding for Level 2 panel section content */
+.panel-2 .section-content {
+    padding-top: var(--spacing-300); /* 12px */
 }
 
 .sidebar-section.collapsed .section-content {
@@ -776,7 +804,7 @@ button:focus {
 
 /* Adjust left margin when sidebar is visible */
 .sidebar-wrapper.visible ~ .grid-container {
-    left: 292px; /* Sidebar wrapper width */
+    left: 324px; /* Sidebar wrapper width */
 }
 
 .grid-container.space-pressed {
@@ -1129,7 +1157,8 @@ button:focus {
     z-index: 1001 !important;
 }
 
-.freestyle-cell.selected {
+.freestyle-cell.selected,
+.grid-cell.selected {
     z-index: 1002 !important;
     outline: 2px solid #007AFF;
     outline-offset: 2px;
@@ -1232,11 +1261,11 @@ button:focus {
 
 @media (max-width: 768px) {
     .sidebar-wrapper {
-        width: 204px; /* 200px + 2px padding on each side */
+        width: 236px; /* 232px + 2px padding on each side */
     }
     
     .sidebar-wrapper.visible ~ .grid-container {
-        left: 204px;
+        left: 236px;
     }
 }
 

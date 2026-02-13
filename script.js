@@ -62,9 +62,11 @@ class ImageGridSplitter {
         this.selectedCellIndex = null; // Index of currently selected cell
         this.aspectRatioLocked = true; // Whether W/H aspect ratio is locked (default: locked)
         this.lastAspectRatio = 1; // Store aspect ratio when locking
+        this.cellDetailAspectLocked = true; // Whether cell detail panel W/H ratio is locked
+        this.cellDetailLastAspectRatio = 1; // Store cell detail aspect ratio when locking
         this.cellWidthValue = 100; // Current width value for sliders
         this.cellHeightValue = 100; // Current height value for sliders
-        this.chaosLevel = 10; // Chaos level for scatter mode (0-100%)
+        this.chaosLevel = 50; // Chaos level for scatter mode (0-100%)
         
         // Animation state
         this.hasAnimatedEnter = false;
@@ -74,6 +76,7 @@ class ImageGridSplitter {
         this._sidebarUpdatePending = false;
         this._cellImageCache = null;       // Map<string, dataURL>
         this._cellImageCacheKey = null;    // tracks image + gridSize for invalidation
+        this._imageHasAlpha = false;       // true when source image contains transparent pixels
         
         this.initializeElements();
         this.attachEventListeners();
@@ -150,7 +153,7 @@ class ImageGridSplitter {
         
         // Click on canvas area deselects cell
         this.gridContainer.addEventListener('click', (e) => {
-            if (e.target === this.gridContainer || e.target.classList.contains('canvas-container') || e.target.classList.contains('freestyle-container')) {
+            if (e.target === this.gridContainer || e.target.classList.contains('canvas-container') || e.target.classList.contains('freestyle-container') || e.target.classList.contains('canvas-content-wrapper')) {
                 this.deselectCell();
             }
         });
@@ -188,6 +191,9 @@ class ImageGridSplitter {
     }
     
     handleUnifiedModeChange() {
+        // Dismiss cell detail panel when switching modes
+        this.deselectCell();
+        
         // Mode is now purely based on layout; contentMode only affects cell rendering
         if (this.layoutMode === 'grid') {
             this.mode = 'grid';
@@ -225,6 +231,9 @@ class ImageGridSplitter {
     }
     
     handleCellCountChange(event) {
+        // Dismiss cell detail panel (cell indices change with count)
+        this.deselectCell();
+        
         this.cellCount = parseInt(event.target.value);
         
         // Capture old grid size before computing new one (used to preserve stretch state)
@@ -400,18 +409,34 @@ class ImageGridSplitter {
         this.deselectCell();
         
         this.selectedCellIndex = index;
-        const cells = document.querySelectorAll('.freestyle-cell');
-        if (cells[index]) {
-            cells[index].classList.add('selected');
-            
-            // Update dimension values with this cell's values
-            const cellData = this.freestyleCells[index];
-            if (cellData) {
-                this.cellWidthValue = Math.round(cellData.width);
-                this.cellHeightValue = Math.round(cellData.height);
-                // Trigger sidebar update to refresh sliders
-                if (window.updateSidebarComponents) {
-                    window.updateSidebarComponents(this);
+
+        if (this.mode === 'grid') {
+            // Grid / Stretch mode: highlight the grid cell
+            const cells = document.querySelectorAll('.grid-cell');
+            if (cells[index]) {
+                cells[index].classList.add('selected');
+            }
+            // Capture initial aspect ratio for lock
+            const col = index % this.gridSize;
+            const row = Math.floor(index / this.gridSize);
+            const totalColW = this.columnWidths.reduce((a, b) => a + b, 0);
+            const totalRowH = this.rowHeights.reduce((a, b) => a + b, 0);
+            const wp = (this.columnWidths[col] / totalColW) * 100;
+            const hp = (this.rowHeights[row] / totalRowH) * 100;
+            this.cellDetailLastAspectRatio = wp / hp;
+        } else {
+            // Scatter / Freestyle mode
+            const cells = document.querySelectorAll('.freestyle-cell');
+            if (cells[index]) {
+                cells[index].classList.add('selected');
+                
+                // Update dimension values with this cell's values
+                const cellData = this.freestyleCells[index];
+                if (cellData) {
+                    this.cellWidthValue = Math.round(cellData.width);
+                    this.cellHeightValue = Math.round(cellData.height);
+                    // Capture initial aspect ratio for lock
+                    this.cellDetailLastAspectRatio = cellData.width / cellData.height;
                 }
             }
         }
@@ -421,13 +446,27 @@ class ImageGridSplitter {
         if (hint) {
             hint.textContent = 'Editing selected cell';
         }
+
+        // Slide sidebar to Panel 2
+        const panels = document.getElementById('sidebarPanels');
+        if (panels) panels.classList.add('show-panel-2');
+
+        // Refresh sidebar (renders cell detail panel)
+        if (window.updateSidebarComponents) {
+            window.updateSidebarComponents(this);
+        }
     }
 
     deselectCell() {
         if (this.selectedCellIndex !== null) {
-            const cells = document.querySelectorAll('.freestyle-cell');
-            if (cells[this.selectedCellIndex]) {
-                cells[this.selectedCellIndex].classList.remove('selected');
+            // Remove highlight from whichever cell type is active
+            const freestyleCells = document.querySelectorAll('.freestyle-cell');
+            const gridCells = document.querySelectorAll('.grid-cell');
+            if (freestyleCells[this.selectedCellIndex]) {
+                freestyleCells[this.selectedCellIndex].classList.remove('selected');
+            }
+            if (gridCells[this.selectedCellIndex]) {
+                gridCells[this.selectedCellIndex].classList.remove('selected');
             }
             this.selectedCellIndex = null;
         }
@@ -438,8 +477,17 @@ class ImageGridSplitter {
             hint.textContent = 'Select one to edit individually';
         }
         
+        // Slide sidebar back to Panel 1
+        const panels = document.getElementById('sidebarPanels');
+        if (panels) panels.classList.remove('show-panel-2');
+        
         // Update values from cells
         this.updateDimensionValuesFromCells();
+
+        // Refresh sidebar
+        if (window.updateSidebarComponents) {
+            window.updateSidebarComponents(this);
+        }
     }
 
     updateDimensionValuesFromCells() {
@@ -615,6 +663,24 @@ class ImageGridSplitter {
         }
     }
 
+    /**
+     * Detect whether an image contains any transparent pixels.
+     * Samples a down-scaled version for speed (100x100 max).
+     */
+    detectImageAlpha(img) {
+        const sampleSize = Math.min(100, img.width, img.height);
+        const canvas = document.createElement('canvas');
+        canvas.width = sampleSize;
+        canvas.height = sampleSize;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, sampleSize, sampleSize);
+        const data = ctx.getImageData(0, 0, sampleSize, sampleSize).data;
+        for (let i = 3; i < data.length; i += 4) {
+            if (data[i] < 254) return true; // any non-fully-opaque pixel
+        }
+        return false;
+    }
+
     handleImageUpload(event) {
         const file = event.target.files[0];
         if (!file) return;
@@ -628,9 +694,12 @@ class ImageGridSplitter {
             const img = new Image();
             img.onload = () => {
                 this.image = img;
+                this._imageHasAlpha = this.detectImageAlpha(img);
+                this.resetToDefaults();
                 this.initializeForMode();
                 this.renderContent();
                 this.updateNavbar();
+                if (window.updateSidebarComponents) window.updateSidebarComponents(this);
             };
             img.src = this.imageDataURL;
         };
@@ -662,16 +731,24 @@ class ImageGridSplitter {
             ctx.drawImage(img, 0, 0);
             
             try {
-                this.imageDataURL = canvas.toDataURL('image/jpeg', 0.95);
+                // Detect transparency and choose format accordingly
+                // PNG preserves alpha but produces much larger data URLs
+                const hasAlpha = this.detectImageAlpha(img);
+                this._imageHasAlpha = hasAlpha;
+                this.imageDataURL = hasAlpha
+                    ? canvas.toDataURL('image/png')
+                    : canvas.toDataURL('image/jpeg', 0.95);
                 this.currentImageSrc = this.imageDataURL;
                 
                 const finalImg = new Image();
                 finalImg.onload = () => {
                     this.image = finalImg;
                     this.currentFileName = fileName;
+                    this.resetToDefaults();
                     this.initializeForMode();
                     this.renderContent();
                     this.updateNavbar();
+                    if (window.updateSidebarComponents) window.updateSidebarComponents(this);
                 };
                 finalImg.src = this.imageDataURL;
             } catch (e) {
@@ -747,6 +824,62 @@ class ImageGridSplitter {
             }
         }
         return newRotations;
+    }
+
+    resetToDefaults() {
+        // Dismiss cell detail panel
+        this.selectedCellIndex = null;
+        const panels = document.getElementById('sidebarPanels');
+        if (panels) panels.classList.remove('show-panel-2');
+        
+        // Reset all editor values to their constructor defaults
+        this.contentMode = 'image';
+        this.layoutMode = 'grid';
+        this.mode = 'grid';
+        
+        this.cellCount = 16;
+        this.cellSize = 0;
+        this.cellSpread = 0;
+        
+        this.gridSize = 4;
+        this.freestyleCellCount = 16;
+        this.paletteColorCount = 16;
+        this.gridCellScale = 0;
+        this.freestyleCellScale = 0;
+        this.paletteCellScale = 0;
+        this.gridCellSpread = 0;
+        this.freestyleCellSpread = 0;
+        this.paletteCellSpread = 0;
+        
+        this.scale = 100;
+        this.imageFit = 'fill';
+        this.cellBorderRadius = 0;
+        this.cellTumble = 0;
+        this.cellRotations = [];
+        this.columnWidths = [];
+        this.rowHeights = [];
+        
+        this.canvasRatio = 'original';
+        this.canvasBackground = 'transparent';
+        this.canvasColor = '#ffffff';
+        this.canvasScale = 100;
+        
+        this.exportScale = 1;
+        
+        this.backgroundImage = null;
+        this.backgroundImageName = null;
+        
+        this.freestyleCells = [];
+        this.cellShape = 'rounded';
+        this.aspectRatioLocked = true;
+        this.lastAspectRatio = 1;
+        this.cellDetailAspectLocked = true;
+        this.cellDetailLastAspectRatio = 1;
+        this.cellWidthValue = 100;
+        this.cellHeightValue = 100;
+        this.chaosLevel = 50;
+        
+        this.hasAnimatedEnter = false;
     }
 
     initializeForMode(oldGridSize) {
@@ -975,8 +1108,29 @@ class ImageGridSplitter {
 
     initializeFreestyleCells() {
         this.freestyleCells = [];
-        const containerWidth = this.gridContainer.clientWidth - 100;
-        const containerHeight = this.gridContainer.clientHeight - 100;
+        
+        // Use the image/canvas aspect ratio so scatter cells match the
+        // canvas shape instead of the viewport container shape.
+        const viewW = this.gridContainer.clientWidth - 100;
+        const viewH = this.gridContainer.clientHeight - 100;
+        
+        let targetAspect;
+        if (this.canvasRatio === 'original') {
+            targetAspect = this.image ? (this.image.width / this.image.height) : (viewW / viewH);
+        } else {
+            const [wr, hr] = this.canvasRatio.split(':').map(Number);
+            targetAspect = wr / hr;
+        }
+        
+        // Fit the target aspect ratio inside the available viewport area
+        let containerWidth, containerHeight;
+        if (viewW / viewH > targetAspect) {
+            containerHeight = viewH;
+            containerWidth = containerHeight * targetAspect;
+        } else {
+            containerWidth = viewW;
+            containerHeight = containerWidth / targetAspect;
+        }
         
         // Calculate grid dimensions based on cell count to evenly divide the image
         const cols = Math.ceil(Math.sqrt(this.freestyleCellCount));
@@ -1106,6 +1260,9 @@ class ImageGridSplitter {
     }
 
     handleReset() {
+        // Dismiss cell detail panel
+        this.deselectCell();
+        
         if (this.mode === 'grid') {
             this.columnWidths = new Array(this.gridSize).fill(1);
             this.rowHeights = new Array(this.gridSize).fill(1);
@@ -1116,6 +1273,9 @@ class ImageGridSplitter {
     }
     
     handleImageReset() {
+        // Dismiss cell detail panel
+        this.deselectCell();
+        
         // Clear the image and return to placeholder
         this.image = null;
         this.imageDataURL = null;
@@ -1312,6 +1472,12 @@ class ImageGridSplitter {
 
     handleMouseUp() {
         if (this.isDragging) {
+            // If dragType is still null, the mouse didn't move beyond the
+            // threshold — treat this as a click and select the cell.
+            if (this.dragType === null && this.dragRow !== null && this.dragCol !== null) {
+                const cellIndex = this.dragRow * this.gridSize + this.dragCol;
+                this.selectCell(cellIndex);
+            }
             this.isDragging = false;
             this.dragType = null;
             this.dragCol = null;
@@ -1430,6 +1596,11 @@ class ImageGridSplitter {
     /**
      * Get a cached cell image data URL, or create and cache one.
      * Cache is invalidated when image or grid structure changes.
+     *
+     * Performance notes:
+     *  - Uses JPEG for opaque images (small data URLs, fast encode).
+     *  - Falls back to PNG only when the source image has transparency.
+     *  - Cell canvas size scales down with cell count to keep total memory bounded.
      */
     getCachedCellImage(row, col, gridSize, image) {
         const cacheKey = `${gridSize}-${image.src || 'img'}`;
@@ -1451,13 +1622,21 @@ class ImageGridSplitter {
         const sx = col * cellWidth;
         const sy = row * cellHeight;
 
+        // Scale down cell canvas at high cell counts to keep total memory bounded.
+        // 256 cells × 400px = huge memory; taper to 200px above 64 cells, 120px above 144.
+        const totalCells = gridSize * gridSize;
+        const maxCellPx = totalCells > 144 ? 120 : totalCells > 64 ? 200 : 400;
+
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
-        canvas.width = Math.min(400, cellWidth);
-        canvas.height = Math.min(400, cellHeight);
+        canvas.width = Math.min(maxCellPx, cellWidth);
+        canvas.height = Math.min(maxCellPx, cellHeight);
         ctx.drawImage(image, sx, sy, cellWidth, cellHeight, 0, 0, canvas.width, canvas.height);
 
-        const dataURL = canvas.toDataURL('image/jpeg', 0.92);
+        // Use PNG only when the source image has transparency; JPEG otherwise
+        const dataURL = this._imageHasAlpha
+            ? canvas.toDataURL('image/png')
+            : canvas.toDataURL('image/jpeg', 0.92);
         this._cellImageCache[cellKey] = dataURL;
         return dataURL;
     }
@@ -1614,6 +1793,19 @@ class ImageGridSplitter {
 
         canvasContainer.appendChild(contentWrapper);
         this.gridContainer.appendChild(canvasContainer);
+
+        // Re-apply cell selection highlight after DOM rebuild
+        this.reapplyCellSelection();
+    }
+
+    /** Re-apply the .selected class on the active cell after a DOM rebuild. */
+    reapplyCellSelection() {
+        if (this.selectedCellIndex === null) return;
+        const selector = this.mode === 'grid' ? '.grid-cell' : '.freestyle-cell';
+        const cells = document.querySelectorAll(selector);
+        if (cells[this.selectedCellIndex]) {
+            cells[this.selectedCellIndex].classList.add('selected');
+        }
     }
 
     renderGrid() {

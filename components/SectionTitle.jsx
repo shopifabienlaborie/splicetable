@@ -4,20 +4,28 @@
  *
  * Props:
  * - label: string          — section name displayed
- * - defaultOpened: boolean  — initial collapsed state (default: true)
- * - onToggle: fn(opened)   — called after toggling, receives new opened state
+ * - level: number           — 1 (default, collapsible) or 2 (back icon on left, no collapse)
+ * - defaultOpened: boolean  — initial collapsed state (default: true, Level 1 only)
+ * - onToggle: fn(opened)   — called after toggling, receives new opened state (Level 1 only)
+ * - onClick: fn()           — called on click (Level 2 only, e.g. navigate back)
  * - className: string
  */
 
 const SectionTitle = ({
   label = 'Section title',
+  level = 1,
   defaultOpened = true,
   onToggle,
+  onClick,
   className = ''
 }) => {
   const [opened, setOpened] = React.useState(defaultOpened);
 
   const handleClick = () => {
+    if (level === 2) {
+      if (onClick) onClick();
+      return;
+    }
     const next = !opened;
     setOpened(next);
     if (onToggle) onToggle(next);
@@ -40,6 +48,30 @@ const SectionTitle = ({
     </svg>
   );
 
+  const BackIcon = () => (
+    <img src="Icons/back.svg" alt="" width="16" height="16" style={{display: 'block'}} />
+  );
+
+  // Level 2: back icon on left, label on right, no chevron
+  if (level === 2) {
+    return (
+      <div
+        className={`section-title-component level-2 ${className}`}
+        onClick={handleClick}
+        onKeyDown={handleKeyDown}
+        role="button"
+        tabIndex={0}
+        aria-label={label}
+      >
+        <div className="section-title-icon">
+          <BackIcon />
+        </div>
+        <span className="section-title-label">{label}</span>
+      </div>
+    );
+  }
+
+  // Level 1 (default): label on left, chevron on right
   return (
     <div
       className={`section-title-component ${opened ? 'opened' : 'closed'} ${className}`}
