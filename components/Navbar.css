@@ -76,12 +76,13 @@
   width: 384px;
 }
 
-/* Right section - Theme toggle */
+/* Right section - Reset button + Theme toggle */
 .navbar-right {
   display: flex;
   align-items: center;
   flex-shrink: 0;
   margin-left: auto;
+  gap: var(--spacing-200); /* 8px between reset button and theme toggle */
 }
 
 /* Hide active dots on the theme toggle SegmentedControl */

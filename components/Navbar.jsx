@@ -29,11 +29,17 @@ const DarkIcon = () => (
   <img src="Icons/dark.svg" alt="" width="16" height="16" style={{display: 'block'}} />
 );
 
+// Reset icon - using Icons/reset.svg
+const NavResetIcon = () => (
+  <img src="Icons/reset.svg" alt="" width="16" height="16" style={{display: 'block'}} />
+);
+
 const Navbar = ({ 
   imageSrc = '',
   fileName = 'img_name.jpg',
   onImageChange,
   onImageReset,
+  onReset,
   selectedView = 'grid',
   onViewChange,
   hideViewToggle = false,
@@ -45,6 +51,7 @@ const Navbar = ({
   // Get components from global scope
   const ImageReplacerComponent = window.ImageReplacer;
   const SegmentedControlComponent = window.SegmentedControl;
+  const ButtonComponent = window.Button;
   
   // Debug: log component availability
   console.log('Navbar render - SegmentedControl available:', !!SegmentedControlComponent, 'ImageReplacer available:', !!ImageReplacerComponent);
@@ -86,8 +93,16 @@ const Navbar = ({
             </div>
           )}
 
-          {/* Right: Theme Toggle */}
+          {/* Right: Reset + Theme Toggle */}
           <div className="navbar-right">
+            {onReset && ButtonComponent && (
+              <ButtonComponent
+                iconBefore={<NavResetIcon />}
+                label=""
+                onClick={onReset}
+                disabled={disabled}
+              />
+            )}
             {typeof SegmentedControlComponent !== 'undefined' && (
               <SegmentedControlComponent
                 items={[

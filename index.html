@@ -47,11 +47,11 @@
                 <div class="sidebar-section section-global" id="globalControls">
                     <div id="sectionTitle-global-root"></div>
                     <div class="section-content section-content-wide">
-                        <!-- Control: Material -->
-                        <div id="materialControl-root"></div>
-
                         <!-- Control: Splicer -->
                         <div id="splicerControl-root"></div>
+
+                        <!-- Control: Material -->
+                        <div id="materialControl-root"></div>
 
                         <!-- Knobs grid: Scale, Size, Spread, Tumble -->
                         <div id="globalKnobsGrid" class="knobs-grid cols-2">
@@ -1100,6 +1100,14 @@
                         onImageReset={() => {
                             if (window.appInstance) {
                                 window.appInstance.handleImageReset();
+                            }
+                        }}
+                        onReset={() => {
+                            if (window.appInstance && window.appInstance.image) {
+                                window.appInstance.resetToDefaults();
+                                window.appInstance.initializeForMode();
+                                window.appInstance.renderContent();
+                                if (window.updateSidebarComponents) window.updateSidebarComponents(window.appInstance);
                             }
                         }}
                         hideViewToggle={true}

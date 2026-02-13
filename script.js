@@ -77,6 +77,8 @@ class ImageGridSplitter {
         this._cellImageCache = null;       // Map<string, dataURL>
         this._cellImageCacheKey = null;    // tracks image + gridSize for invalidation
         this._imageHasAlpha = false;       // true when source image contains transparent pixels
+        this._cellCanvas = null;           // reusable canvas for getCachedCellImage
+        this._cellCanvasCtx = null;        // reusable 2d context
         
         this.initializeElements();
         this.attachEventListeners();
@@ -236,17 +238,24 @@ class ImageGridSplitter {
         
         this.cellCount = parseInt(event.target.value);
         
-        // Capture old grid size before computing new one (used to preserve stretch state)
-        const oldGridSize = this.gridSize;
-        
         // Sync to mode-specific properties
+        const oldGridSize = this.gridSize;
         this.gridSize = Math.round(Math.sqrt(this.cellCount));
         this.freestyleCellCount = this.cellCount;
         this.paletteColorCount = this.cellCount;
         
         if (this.image) {
-            this.initializeForMode(oldGridSize);
-            requestAnimationFrame(() => this.renderContent());
+            // Defer heavy init + render into a single coalesced animation frame
+            // so rapid slider ticks only execute once per frame.
+            this._pendingOldGridSize = oldGridSize;
+            if (!this._renderPending) {
+                this._renderPending = true;
+                requestAnimationFrame(() => {
+                    this._renderPending = false;
+                    this.initializeForMode(this._pendingOldGridSize);
+                    this.renderContent();
+                });
+            }
         }
     }
     
@@ -287,6 +296,15 @@ class ImageGridSplitter {
                 },
                 onImageReset: () => {
                     this.handleImageReset();
+                },
+                onReset: () => {
+                    if (this.image) {
+                        this.resetToDefaults();
+                        this.initializeForMode();
+                        this.renderContent();
+                        this.updateNavbar();
+                        if (window.updateSidebarComponents) window.updateSidebarComponents(this);
+                    }
                 },
                 hideViewToggle: true,
                 theme: window.currentTheme || 'light',
@@ -773,8 +791,15 @@ class ImageGridSplitter {
         const oldGridSize = this.gridSize;
         this.gridSize = parseInt(event.target.value);
         if (this.image) {
-            this.initializeForMode(oldGridSize);
-            requestAnimationFrame(() => this.renderContent());
+            this._pendingOldGridSize = oldGridSize;
+            if (!this._renderPending) {
+                this._renderPending = true;
+                requestAnimationFrame(() => {
+                    this._renderPending = false;
+                    this.initializeForMode(this._pendingOldGridSize);
+                    this.renderContent();
+                });
+            }
         }
     }
 
@@ -869,6 +894,9 @@ class ImageGridSplitter {
         this.backgroundImage = null;
         this.backgroundImageName = null;
         
+        this.extractedColors = []; // force re-extraction for new image
+        this.gridCellColors = [];
+        
         this.freestyleCells = [];
         this.cellShape = 'rounded';
         this.aspectRatioLocked = true;
@@ -883,10 +911,14 @@ class ImageGridSplitter {
     }
 
     initializeForMode(oldGridSize) {
-        // Always extract colors for background swatches (used in all modes)
-        this.extractColors();
+        // Extract palette colors only when they haven't been computed yet
+        // (they depend on the image, not on cell count / grid size)
+        if (!this.extractedColors || this.extractedColors.length === 0) {
+            this.extractColors();
+        }
         
-        // Extract grid cell colors when in color content mode
+        // Extract per-cell colors when in color content mode
+        // (these DO depend on gridSize so must re-run when grid changes)
         if (this.contentMode === 'color') {
             this.extractColorsForGrid();
         }
@@ -1001,47 +1033,49 @@ class ImageGridSplitter {
     }
     
     extractColorsForGrid() {
-        // Extract colors for each grid cell based on dominant color in that region
+        // Extract average color per grid cell.
+        // Uses a single downscaled getImageData instead of N² getImageData calls.
         try {
+            const gs = this.gridSize;
+            // Sample at least 8 px per cell so colour average is reasonable,
+            // but cap total canvas to keep it fast (max ~200 × 200).
+            const cellSample = Math.max(8, Math.min(24, Math.floor(200 / gs)));
+            const sw = gs * cellSample;
+            const sh = gs * cellSample;
+
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d', { willReadFrequently: true });
-            canvas.width = this.image.width;
-            canvas.height = this.image.height;
-            ctx.drawImage(this.image, 0, 0);
-            
+            canvas.width = sw;
+            canvas.height = sh;
+            ctx.drawImage(this.image, 0, 0, sw, sh);
+
+            // One getImageData for the entire downscaled image
+            const imageData = ctx.getImageData(0, 0, sw, sh);
+            const pixels = imageData.data;
+
             this.gridCellColors = [];
-            const cellWidth = this.image.width / this.gridSize;
-            const cellHeight = this.image.height / this.gridSize;
-            
-            for (let row = 0; row < this.gridSize; row++) {
-                for (let col = 0; col < this.gridSize; col++) {
-                    const sx = Math.floor(col * cellWidth);
-                    const sy = Math.floor(row * cellHeight);
-                    const sw = Math.floor(cellWidth);
-                    const sh = Math.floor(cellHeight);
-                    
-                    const imageData = ctx.getImageData(sx, sy, sw, sh);
-                    const pixels = imageData.data;
-                    
-                    // Calculate average color for this cell
+
+            for (let row = 0; row < gs; row++) {
+                for (let col = 0; col < gs; col++) {
                     let totalR = 0, totalG = 0, totalB = 0, count = 0;
-                    const step = 4; // Sample every 4th pixel for performance
-                    
-                    for (let i = 0; i < pixels.length; i += step * 4) {
-                        const a = pixels[i + 3];
-                        if (a < 128) continue;
-                        
-                        totalR += pixels[i];
-                        totalG += pixels[i + 1];
-                        totalB += pixels[i + 2];
-                        count++;
+                    const x0 = col * cellSample;
+                    const y0 = row * cellSample;
+
+                    for (let y = y0; y < y0 + cellSample; y++) {
+                        for (let x = x0; x < x0 + cellSample; x++) {
+                            const idx = (y * sw + x) * 4;
+                            if (pixels[idx + 3] < 128) continue;
+                            totalR += pixels[idx];
+                            totalG += pixels[idx + 1];
+                            totalB += pixels[idx + 2];
+                            count++;
+                        }
                     }
-                    
+
                     if (count > 0) {
-                        const avgR = Math.round(totalR / count);
-                        const avgG = Math.round(totalG / count);
-                        const avgB = Math.round(totalB / count);
-                        this.gridCellColors.push(`rgb(${avgR}, ${avgG}, ${avgB})`);
+                        this.gridCellColors.push(
+                            `rgb(${Math.round(totalR / count)}, ${Math.round(totalG / count)}, ${Math.round(totalB / count)})`
+                        );
                     } else {
                         this.gridCellColors.push('rgb(128, 128, 128)');
                     }
@@ -1049,7 +1083,6 @@ class ImageGridSplitter {
             }
         } catch (e) {
             console.error('Error extracting grid colors:', e);
-            // Fallback: generate colors
             this.gridCellColors = [];
             const totalCells = this.gridSize * this.gridSize;
             for (let i = 0; i < totalCells; i++) {
@@ -1627,11 +1660,22 @@ class ImageGridSplitter {
         const totalCells = gridSize * gridSize;
         const maxCellPx = totalCells > 144 ? 120 : totalCells > 64 ? 200 : 400;
 
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        canvas.width = Math.min(maxCellPx, cellWidth);
-        canvas.height = Math.min(maxCellPx, cellHeight);
-        ctx.drawImage(image, sx, sy, cellWidth, cellHeight, 0, 0, canvas.width, canvas.height);
+        const w = Math.min(maxCellPx, cellWidth);
+        const h = Math.min(maxCellPx, cellHeight);
+
+        // Reuse a single canvas + context (avoids creating 256 DOM elements per render)
+        if (!this._cellCanvas) {
+            this._cellCanvas = document.createElement('canvas');
+            this._cellCanvasCtx = this._cellCanvas.getContext('2d');
+        }
+        const canvas = this._cellCanvas;
+        const ctx = this._cellCanvasCtx;
+
+        // Only resize when dimensions change (avoids clearing + context reset overhead)
+        if (canvas.width !== w) canvas.width = w;
+        if (canvas.height !== h) canvas.height = h;
+        ctx.clearRect(0, 0, w, h);
+        ctx.drawImage(image, sx, sy, cellWidth, cellHeight, 0, 0, w, h);
 
         // Use PNG only when the source image has transparency; JPEG otherwise
         const dataURL = this._imageHasAlpha
