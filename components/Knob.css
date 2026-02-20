@@ -52,12 +52,12 @@
 /* Spring: stiffness 1080, damping 48, mass 1 → underdamped ~250ms */
 .knob-dots .dot-unlit {
   fill: var(--surface-profound);
-  transition: fill 250ms cubic-bezier(0.25, 1.05, 0.45, 1.0);
+  transition: fill 150ms cubic-bezier(0.25, 1, 0.45, 1);
 }
 
 .knob-dots .dot-lit {
   fill: var(--accent);
-  transition: fill 250ms cubic-bezier(0.25, 1.05, 0.45, 1.0);
+  transition: fill 150ms cubic-bezier(0.25, 1, 0.45, 1);
 }
 
 /* ═══════════════════════════════════════════════
@@ -179,7 +179,6 @@
   border-radius: var(--radius-full);
   background: var(--surface-bottomless);
   box-shadow: 0px 1px 0px 0px var(--inner-top-light);
-  transition: background 250ms cubic-bezier(0.25, 1.05, 0.45, 1.0);
 }
 
 /* Bar inset shadow */
@@ -372,4 +371,110 @@ html.dark-mode .knob-reset:hover img,
   html:not(.light-mode) .knob-reset:hover img {
     filter: brightness(0) invert(1);
   }
+}
+
+/* ═══════════════════════════════════════════════
+   Loading state
+   Knob settles down, shadow fades, label becomes
+   animated "Workin' on it..." in content-tertiary.
+   ═══════════════════════════════════════════════ */
+
+.knob-component.loading {
+  pointer-events: none;
+}
+
+/* Inner disc drops 8px */
+.knob-component.loading .knob-inner {
+  transform: translateY(var(--spacing-200));
+}
+
+/* Hide inner top-light inset */
+.knob-component.loading .knob-inner::after {
+  opacity: 0;
+}
+
+/* All shadows to 0 */
+.knob-component.loading .knob-outer {
+  box-shadow: none;
+}
+
+/* Hide depth gradient */
+.knob-component.loading .knob-outer::before {
+  opacity: 0;
+}
+
+/* Handle bar becomes surface-below, shadows hidden */
+.knob-component.loading .knob-bar {
+  background: var(--surface-below);
+  box-shadow: none;
+}
+
+.knob-component.loading .knob-bar::after {
+  opacity: 0;
+}
+
+/* Frame bottom-light to 0 */
+.knob-component.loading .knob-handle {
+  box-shadow: 0px 1px 0px 0px transparent;
+  background: var(--surface-profound);
+  cursor: default;
+}
+
+/* Dots unlit while loading */
+.knob-component.loading .dot-lit {
+  fill: var(--surface-profound);
+}
+
+/* Hover won't trigger value field */
+.knob-component.loading .knob-value-field {
+  pointer-events: none;
+}
+
+/* Loading label — content-tertiary, always visible */
+.knob-label-loading {
+  color: var(--content-tertiary);
+}
+
+/* Animated ellipsis after "Workin' on it" */
+.knob-loading-text::after {
+  content: '';
+  animation: knobEllipsis 1.5s steps(1) infinite;
+}
+
+@keyframes knobEllipsis {
+  0%   { content: ''; }
+  25%  { content: '.'; }
+  50%  { content: '..'; }
+  75%  { content: '...'; }
+}
+
+/* ─── Loading transitions (only on knobs that use loading) ─── */
+.knob-component.loadable .knob-inner {
+  transition: transform 150ms cubic-bezier(0.25, 1, 0.45, 1);
+}
+
+.knob-component.loadable .knob-inner::after {
+  transition: opacity 150ms cubic-bezier(0.25, 1, 0.45, 1);
+}
+
+.knob-component.loadable .knob-outer {
+  transition: box-shadow 150ms cubic-bezier(0.25, 1, 0.45, 1);
+}
+
+.knob-component.loadable .knob-outer::before {
+  transition: opacity 150ms cubic-bezier(0.25, 1, 0.45, 1);
+}
+
+.knob-component.loadable .knob-bar {
+  transition: background 150ms cubic-bezier(0.25, 1, 0.45, 1),
+              box-shadow 150ms cubic-bezier(0.25, 1, 0.45, 1);
+}
+
+.knob-component.loadable .knob-bar::after {
+  transition: opacity 150ms cubic-bezier(0.25, 1, 0.45, 1);
+}
+
+.knob-component.loadable .knob-handle {
+  transition: box-shadow 150ms cubic-bezier(0.25, 1, 0.45, 1),
+              background 150ms cubic-bezier(0.25, 1, 0.45, 1);
 }

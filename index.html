@@ -119,6 +119,7 @@
                             <div id="cellDetail-lock-root" class="lock-btn-container"></div>
                             <div id="cellDetail-height-root"></div>
                         </div>
+                        <div id="cellDetail-visibility-root"></div>
                         <div id="cellDetail-resetOverride-root"></div>
                     </div>
                 </div>
@@ -324,8 +325,16 @@
         };
 
         // Function to update all sidebar components
-        window.updateSidebarComponents = function(app) {
+        window.updateSidebarRoot = function(app, ...keys) {
+            if (!app || !keys.length) return;
+            window.updateSidebarComponents(app, new Set(keys));
+        };
+
+        window.updateSidebarComponents = function(app, dirtyRoots) {
             if (!app) return;
+            
+            const renderAll = !dirtyRoots;
+            const should = (key) => renderAll || dirtyRoots.has(key);
             
             // Determine current mode states
             const isGrid = app.layoutMode === 'grid';
@@ -335,54 +344,49 @@
             const bgIsColor = app.canvasBackground === 'color';
             const bgIsImage = app.canvasBackground === 'image';
             
-            // ─── Visibility toggles ───────────────────────────────
-            const cellFitGroup = document.getElementById('cellFitGroup');
-            const radiusGroup = document.getElementById('radiusGroup');
-            const tumbleGroup = document.getElementById('tumbleGroup');
-            const dimensionsGroup = document.getElementById('dimensionsGroup');
-            const chaosGroup = document.getElementById('chaosGroup');
-            const sizeGroup = document.getElementById('sizeGroup');
-            const spreadGroup = document.getElementById('spreadGroup');
-            
-            // Cell Fit: only for Image material
-            if (cellFitGroup) cellFitGroup.style.display = isImage ? '' : 'none';
-            if (radiusGroup) radiusGroup.style.display = '';
-            if (tumbleGroup) tumbleGroup.style.display = '';
-            if (dimensionsGroup) dimensionsGroup.style.display = isScatter ? '' : 'none';
-            
-            // Chaos: only for Scatter
-            if (chaosGroup) chaosGroup.style.display = isScatter ? '' : 'none';
-            
-            // Size: hide for Scatter (W/H replaces it)
-            if (sizeGroup) sizeGroup.style.display = isScatter ? 'none' : '';
-            if (spreadGroup) spreadGroup.style.display = '';
-            
-            // Toggle global knobs grid columns
-            const globalKnobsGrid = document.getElementById('globalKnobsGrid');
-            if (globalKnobsGrid) {
-                if (isScatter) {
-                    globalKnobsGrid.classList.remove('cols-2');
-                    globalKnobsGrid.classList.add('cols-3');
-                } else {
-                    globalKnobsGrid.classList.remove('cols-3');
-                    globalKnobsGrid.classList.add('cols-2');
+            // ─── Visibility toggles (only on full refresh) ────────
+            if (renderAll) {
+                const cellFitGroup = document.getElementById('cellFitGroup');
+                const radiusGroup = document.getElementById('radiusGroup');
+                const tumbleGroup = document.getElementById('tumbleGroup');
+                const dimensionsGroup = document.getElementById('dimensionsGroup');
+                const chaosGroup = document.getElementById('chaosGroup');
+                const sizeGroup = document.getElementById('sizeGroup');
+                const spreadGroup = document.getElementById('spreadGroup');
+                
+                if (cellFitGroup) cellFitGroup.style.display = isImage ? '' : 'none';
+                if (radiusGroup) radiusGroup.style.display = '';
+                if (tumbleGroup) tumbleGroup.style.display = '';
+                if (dimensionsGroup) dimensionsGroup.style.display = isScatter ? '' : 'none';
+                if (chaosGroup) chaosGroup.style.display = isScatter ? '' : 'none';
+                if (sizeGroup) sizeGroup.style.display = isScatter ? 'none' : '';
+                if (spreadGroup) spreadGroup.style.display = '';
+                
+                const globalKnobsGrid = document.getElementById('globalKnobsGrid');
+                if (globalKnobsGrid) {
+                    if (isScatter) {
+                        globalKnobsGrid.classList.remove('cols-2');
+                        globalKnobsGrid.classList.add('cols-3');
+                    } else {
+                        globalKnobsGrid.classList.remove('cols-3');
+                        globalKnobsGrid.classList.add('cols-2');
+                    }
                 }
-            }
-            
-            // Toggle cells knobs grid columns
-            const cellsKnobsGrid = document.getElementById('cellsKnobsGrid');
-            if (cellsKnobsGrid) {
-                if (isScatter) {
-                    cellsKnobsGrid.classList.remove('cols-2');
-                    cellsKnobsGrid.classList.add('cols-3');
-                } else {
-                    cellsKnobsGrid.classList.remove('cols-3');
-                    cellsKnobsGrid.classList.add('cols-2');
+                
+                const cellsKnobsGrid = document.getElementById('cellsKnobsGrid');
+                if (cellsKnobsGrid) {
+                    if (isScatter) {
+                        cellsKnobsGrid.classList.remove('cols-2');
+                        cellsKnobsGrid.classList.add('cols-3');
+                    } else {
+                        cellsKnobsGrid.classList.remove('cols-3');
+                        cellsKnobsGrid.classList.add('cols-2');
+                    }
                 }
             }
             
             // ─── Canvas Section: Background Control ──────────────
-            if (window.sidebarRoots.backgroundControl) {
+            if (should('backgroundControl') && window.sidebarRoots.backgroundControl) {
                 window.sidebarRoots.backgroundControl.render(
                     <Control label="Background">
                         <div style={{display: 'flex', flexDirection: 'column', gap: 'var(--spacing-200)', width: '100%'}}>
@@ -397,7 +401,7 @@
                                         onChange={(value) => {
                                             app.canvasRatio = value;
                                             app.handleCanvasRatioChange({ target: { value } });
-                                            window.updateSidebarComponents(app);
+                                            window.updateSidebarRoot(app, 'backgroundControl');
                                         }}
                                         options={[
                                             { value: 'original', label: 'Original', icon: <FrameIcon /> },
@@ -416,7 +420,7 @@
                                     onChange={(value) => {
                                         app.canvasBackground = value;
                                         app.handleCanvasBackgroundChange({ target: { value } });
-                                        window.updateSidebarComponents(app);
+                                        window.updateSidebarRoot(app, 'backgroundControl');
                                     }}
                                     items={[
                                         { value: 'transparent', label: '', iconBefore: <TransparentBgIcon /> },
@@ -426,9 +430,9 @@
                                 />
                             </div>
                             
-                            {/* Conditional: Hex color TextField + color picker + swatches when bg is "color" */}
-                            {bgIsColor && (
-                                <React.Fragment>
+                            {/* Background "color" panel — always rendered, animated via CSS */}
+                            <div className={`sidebar-reveal ${bgIsColor ? 'active' : ''}`} aria-hidden={!bgIsColor}>
+                                <div className="sidebar-reveal-inner">
                                     <TextField
                                         value={app.canvasColor || '#ffffff'}
                                         iconBefore={
@@ -437,16 +441,15 @@
                                                 onColorChange={(value) => {
                                                     app.canvasColor = value;
                                                     if (app.image) app.renderContent();
-                                                    window.updateSidebarComponents(app);
+                                                    window.updateSidebarRoot(app, 'backgroundControl');
                                                 }}
                                             />
                                         }
                                         onChange={(value) => {
-                                            // Validate hex
                                             if (/^#[0-9A-Fa-f]{6}$/.test(value) || /^#[0-9A-Fa-f]{3}$/.test(value)) {
                                                 app.canvasColor = value;
                                                 if (app.image) app.renderContent();
-                                                window.updateSidebarComponents(app);
+                                                window.updateSidebarRoot(app, 'backgroundControl');
                                             }
                                         }}
                                         onBlur={(e) => {
@@ -455,7 +458,7 @@
                                             if (/^#[0-9A-Fa-f]{6}$/.test(v) || /^#[0-9A-Fa-f]{3}$/.test(v)) {
                                                 app.canvasColor = v;
                                                 if (app.image) app.renderContent();
-                                                window.updateSidebarComponents(app);
+                                                window.updateSidebarRoot(app, 'backgroundControl');
                                             }
                                         }}
                                         placeholder="#ffffff"
@@ -466,43 +469,45 @@
                                         onSelectColor={(hexColor) => {
                                             app.canvasColor = hexColor;
                                             if (app.image) app.renderContent();
-                                            window.updateSidebarComponents(app);
+                                            window.updateSidebarRoot(app, 'backgroundControl');
                                         }}
                                     />
-                                </React.Fragment>
-                            )}
+                                </div>
+                            </div>
                             
-                            {/* Conditional: ImageReplacer when bg is "image" */}
-                            {bgIsImage && (
-                                <ImageReplacer
-                                    className="always-hover"
-                                    imageSrc={app.backgroundImage ? (app.backgroundImage.src || app.imageDataURL) : (app.imageDataURL || '')}
-                                    fileName={app.backgroundImageName || (app.image ? 'Original image' : 'No image')}
-                                    onImageChange={(file, previewUrl) => {
-                                        const img = new Image();
-                                        img.onload = () => {
-                                            app.backgroundImage = img;
-                                            app.backgroundImageName = file.name;
+                            {/* Background "image" panel — always rendered, animated via CSS */}
+                            <div className={`sidebar-reveal ${bgIsImage ? 'active' : ''}`} aria-hidden={!bgIsImage}>
+                                <div className="sidebar-reveal-inner">
+                                    <ImageReplacer
+                                        className="always-hover"
+                                        imageSrc={app.backgroundImage ? (app.backgroundImage.src || app.imageDataURL) : (app.imageDataURL || '')}
+                                        fileName={app.backgroundImageName || (app.image ? 'Original image' : 'No image')}
+                                        onImageChange={(file, previewUrl) => {
+                                            const img = new Image();
+                                            img.onload = () => {
+                                                app.backgroundImage = img;
+                                                app.backgroundImageName = file.name;
+                                                if (app.image) app.renderContent();
+                                                window.updateSidebarRoot(app, 'backgroundControl');
+                                            };
+                                            img.src = previewUrl;
+                                        }}
+                                        onReset={() => {
+                                            app.backgroundImage = app.image;
+                                            app.backgroundImageName = null;
                                             if (app.image) app.renderContent();
-                                            window.updateSidebarComponents(app);
-                                        };
-                                        img.src = previewUrl;
-                                    }}
-                                    onReset={() => {
-                                        app.backgroundImage = app.image;
-                                        app.backgroundImageName = null;
-                                        if (app.image) app.renderContent();
-                                        window.updateSidebarComponents(app);
-                                    }}
-                                />
-                            )}
+                                            window.updateSidebarRoot(app, 'backgroundControl');
+                                        }}
+                                    />
+                                </div>
+                            </div>
                         </div>
                     </Control>
                 );
             }
             
             // ─── Global Section: Material Control ────────────────
-            if (window.sidebarRoots.materialControl) {
+            if (should('materialControl') && window.sidebarRoots.materialControl) {
                 window.sidebarRoots.materialControl.render(
                     <Control label="Material">
                         <SegmentedControl
@@ -523,7 +528,7 @@
             }
             
             // ─── Global Section: Splicer Control ─────────────────
-            if (window.sidebarRoots.splicerControl) {
+            if (should('splicerControl') && window.sidebarRoots.splicerControl) {
                 window.sidebarRoots.splicerControl.render(
                     <Control label="Splicer">
                         <SegmentedControl
@@ -545,7 +550,7 @@
             
             // ─── Global Section: Knobs ───────────────────────────
             // Canvas Scale Knob
-            if (window.sidebarRoots.canvasScale) {
+            if (should('canvasScale') && window.sidebarRoots.canvasScale) {
                 window.sidebarRoots.canvasScale.render(
                     <Knob
                         label="Scale"
@@ -558,14 +563,14 @@
                         onChange={(value) => {
                             app.canvasScale = value;
                             app.updateLayoutStyles();
-                            app.scheduleSidebarUpdate();
+                            app.scheduleSidebarUpdate('canvasScale');
                         }}
                     />
                 );
             }
             
             // Cell Size Knob (unified) — hidden in Scatter
-            if (window.sidebarRoots.cellSize) {
+            if (should('cellSize') && window.sidebarRoots.cellSize) {
                 window.sidebarRoots.cellSize.render(
                     <Knob
                         label="Size"
@@ -581,14 +586,14 @@
                                 app.initializeFreestyleCells();
                             }
                             app.updateLayoutStyles();
-                            app.scheduleSidebarUpdate();
+                            app.scheduleSidebarUpdate('cellSize');
                         }}
                     />
                 );
             }
             
             // Cell Spread Knob (unified)
-            if (window.sidebarRoots.cellSpread) {
+            if (should('cellSpread') && window.sidebarRoots.cellSpread) {
                 window.sidebarRoots.cellSpread.render(
                     <Knob
                         label="Spread"
@@ -604,14 +609,14 @@
                                 app.initializeFreestyleCells();
                             }
                             app.updateLayoutStyles();
-                            app.scheduleSidebarUpdate();
+                            app.scheduleSidebarUpdate('cellSpread');
                         }}
                     />
                 );
             }
             
             // Cell Tumble Knob
-            if (window.sidebarRoots.cellTumble) {
+            if (should('cellTumble') && window.sidebarRoots.cellTumble) {
                 window.sidebarRoots.cellTumble.render(
                     <Knob
                         label="Tumble"
@@ -624,14 +629,14 @@
                             app.cellTumble = value;
                             app.generateCellRotations();
                             app.updateLayoutStyles();
-                            app.scheduleSidebarUpdate();
+                            app.scheduleSidebarUpdate('cellTumble');
                         }}
                     />
                 );
             }
             
             // ─── Cells Section: Cell Control (Fill/Fit) ──────────
-            if (window.sidebarRoots.cellControl) {
+            if (should('cellControl') && window.sidebarRoots.cellControl) {
                 window.sidebarRoots.cellControl.render(
                     <Control label="Cell">
                         <SegmentedControl
@@ -644,7 +649,7 @@
                             onChange={(value) => {
                                 app.imageFit = value;
                                 app.handleFitChange({ target: { dataset: { fit: value } } });
-                                window.updateSidebarComponents(app);
+                                window.updateSidebarRoot(app, 'cellControl');
                             }}
                         />
                     </Control>
@@ -654,25 +659,27 @@
             // ─── Cells Section: Knobs ────────────────────────────
             // Cell Count Knob
             const cellCountMax = 256;
-            if (window.sidebarRoots.cellCount) {
+            if (should('cellCount') && window.sidebarRoots.cellCount) {
                 window.sidebarRoots.cellCount.render(
                     <Knob
                         label="Count"
+                        className="loadable"
                         min={4}
                         max={cellCountMax}
                         step={4}
                         value={Math.min(app.cellCount, cellCountMax)}
+                        loading={!!app._countKnobLoading}
                         onChange={(value) => {
                             app.cellCount = value;
                             app.handleCellCountChange({ target: { value } });
-                            app.scheduleSidebarUpdate();
+                            app.scheduleSidebarUpdate('cellCount');
                         }}
                     />
                 );
             }
             
             // Cell Radius Knob
-            if (window.sidebarRoots.cellRadius) {
+            if (should('cellRadius') && window.sidebarRoots.cellRadius) {
                 window.sidebarRoots.cellRadius.render(
                     <Knob
                         label="Radius"
@@ -684,14 +691,14 @@
                         onChange={(value) => {
                             app.cellBorderRadius = value;
                             app.updateLayoutStyles();
-                            app.scheduleSidebarUpdate();
+                            app.scheduleSidebarUpdate('cellRadius');
                         }}
                     />
                 );
             }
             
             // Chaos Knob (Scatter only)
-            if (window.sidebarRoots.chaos) {
+            if (should('chaos') && window.sidebarRoots.chaos) {
                 window.sidebarRoots.chaos.render(
                     <Knob
                         label="Chaos"
@@ -704,14 +711,14 @@
                             app.chaosLevel = value;
                             app.initializeFreestyleCells();
                             app.scheduleRender();
-                            app.scheduleSidebarUpdate();
+                            app.scheduleSidebarUpdate('chaos');
                         }}
                     />
                 );
             }
             
             // Cell Width Knob (Scatter only)
-            if (window.sidebarRoots.cellWidth) {
+            if (should('cellWidth') && window.sidebarRoots.cellWidth) {
                 window.sidebarRoots.cellWidth.render(
                     <Knob
                         label="Width"
@@ -721,14 +728,14 @@
                         value={app.cellWidthValue || 100}
                         onChange={(value) => {
                             app.handleCellWidthSliderChange(value);
-                            app.scheduleSidebarUpdate();
+                            app.scheduleSidebarUpdate('cellWidth');
                         }}
                     />
                 );
             }
             
             // Cell Height Knob (Scatter only)
-            if (window.sidebarRoots.cellHeight) {
+            if (should('cellHeight') && window.sidebarRoots.cellHeight) {
                 window.sidebarRoots.cellHeight.render(
                     <Knob
                         label="Height"
@@ -738,14 +745,14 @@
                         value={app.cellHeightValue || 100}
                         onChange={(value) => {
                             app.handleCellHeightSliderChange(value);
-                            app.scheduleSidebarUpdate();
+                            app.scheduleSidebarUpdate('cellHeight');
                         }}
                     />
                 );
             }
             
             // Lock Aspect Ratio Button (Scatter only) with active dot
-            if (window.sidebarRoots.lockAspectBtn) {
+            if (should('lockAspectBtn') && window.sidebarRoots.lockAspectBtn) {
                 window.sidebarRoots.lockAspectBtn.render(
                     <React.Fragment>
                         <Button
@@ -755,7 +762,7 @@
                             className="lock-aspect-button"
                             onClick={() => {
                                 app.toggleAspectLock();
-                                window.updateSidebarComponents(app);
+                                window.updateSidebarRoot(app, 'lockAspectBtn');
                             }}
                         />
                         <span className={`lock-active-dot ${app.aspectRatioLocked ? 'engaged' : ''}`} />
@@ -765,13 +772,13 @@
             
             // ─── Export Section ───────────────────────────────────
             // Export Scale Select
-            if (window.sidebarRoots.exportScale) {
+            if (should('exportScale') && window.sidebarRoots.exportScale) {
                 window.sidebarRoots.exportScale.render(
                     <Select
                         value={String(app.exportScale || 1)}
                         onChange={(value) => {
                             app.exportScale = parseFloat(value);
-                            window.updateSidebarComponents(app);
+                            window.updateSidebarRoot(app, 'exportScale');
                         }}
                         options={[
                             { value: '1', label: '1x' },
@@ -784,7 +791,7 @@
             }
             
             // Export Button
-            if (window.sidebarRoots.exportBtn) {
+            if (should('exportBtn') && window.sidebarRoots.exportBtn) {
                 window.sidebarRoots.exportBtn.render(
                     <Button
                         variant="outline"
@@ -797,7 +804,7 @@
             }
             
             // ─── Cell Detail Panel (Panel 2) ──────────────────────
-            if (app.selectedCellIndex !== null) {
+            if (should('cellDetail') && app.selectedCellIndex !== null) {
                 const cellIdx = app.selectedCellIndex;
                 const cellLabel = `Cell ${cellIdx + 1}`;
                 
@@ -823,7 +830,6 @@
                                 className="lock-aspect-button"
                                 onClick={() => {
                                     app.cellDetailAspectLocked = !app.cellDetailAspectLocked;
-                                    // Store current aspect ratio when locking
                                     if (app.cellDetailAspectLocked) {
                                         if (isGrid) {
                                             const _col = cellIdx % app.gridSize;
@@ -838,7 +844,7 @@
                                             if (_cd) app.cellDetailLastAspectRatio = _cd.width / _cd.height;
                                         }
                                     }
-                                    window.updateSidebarComponents(app);
+                                    window.updateSidebarRoot(app, 'cellDetail');
                                 }}
                             />
                             <span className={`lock-active-dot ${app.cellDetailAspectLocked ? 'engaged' : ''}`} />
@@ -857,6 +863,30 @@
                     const colPercent = Math.round((app.columnWidths[col] / totalColWeight) * 100);
                     const rowPercent = Math.round((app.rowHeights[row] / totalRowWeight) * 100);
                     
+                    // Show / Hide toggle (Stretch mode only)
+                    const isCellHidden = app.hiddenCells.has(cellIdx);
+                    if (window.sidebarRoots.cellDetailVisibility) {
+                        window.sidebarRoots.cellDetailVisibility.render(
+                            <SegmentedControl
+                                fullWidth={true}
+                                value={isCellHidden ? 'hide' : 'show'}
+                                onChange={(value) => {
+                                    if (value === 'hide') {
+                                        app.hiddenCells.add(cellIdx);
+                                    } else {
+                                        app.hiddenCells.delete(cellIdx);
+                                    }
+                                    app.scheduleRender();
+                                    app.scheduleSidebarUpdate('cellDetail');
+                                }}
+                                items={[
+                                    { value: 'show', label: 'Show' },
+                                    { value: 'hide', label: 'Hide' }
+                                ]}
+                            />
+                        );
+                    }
+                    
                     if (window.sidebarRoots.cellDetailWidth) {
                         window.sidebarRoots.cellDetailWidth.render(
                             <Knob
@@ -872,7 +902,6 @@
                                     const pct = Math.max(5, Math.min(95, value)) / 100;
                                     app.columnWidths[col] = (pct * sumOtherCol) / (1 - pct);
                                     
-                                    // If locked, adjust row height proportionally
                                     if (app.cellDetailAspectLocked && app.cellDetailLastAspectRatio) {
                                         const newRowPct = Math.max(5, Math.min(95, value / app.cellDetailLastAspectRatio));
                                         const otherRowWeights = app.rowHeights.filter((_, i) => i !== row);
@@ -883,7 +912,7 @@
                                     
                                     app.updateLayoutStyles();
                                     app.scheduleRender();
-                                    app.scheduleSidebarUpdate();
+                                    app.scheduleSidebarUpdate('cellDetail');
                                 }}
                             />
                         );
@@ -904,7 +933,6 @@
                                     const pct = Math.max(5, Math.min(95, value)) / 100;
                                     app.rowHeights[row] = (pct * sumOtherRow) / (1 - pct);
                                     
-                                    // If locked, adjust column width proportionally
                                     if (app.cellDetailAspectLocked && app.cellDetailLastAspectRatio) {
                                         const newColPct = Math.max(5, Math.min(95, value * app.cellDetailLastAspectRatio));
                                         const otherColWeights = app.columnWidths.filter((_, i) => i !== col);
@@ -915,17 +943,36 @@
                                     
                                     app.updateLayoutStyles();
                                     app.scheduleRender();
-                                    app.scheduleSidebarUpdate();
+                                    app.scheduleSidebarUpdate('cellDetail');
                                 }}
                             />
                         );
                     }
                     
-                    // Stretch mode: no reset button — clear the root
+                    // Reset override button (Stretch mode)
                     if (window.sidebarRoots.cellDetailReset) {
-                        window.sidebarRoots.cellDetailReset.render(null);
+                        window.sidebarRoots.cellDetailReset.render(
+                            <Button
+                                variant="outline"
+                                label="Reset override"
+                                iconBefore={<ResetIcon />}
+                                fullWidth={true}
+                                onClick={() => {
+                                    app.columnWidths[col] = 1;
+                                    app.rowHeights[row] = 1;
+                                    app.hiddenCells.delete(cellIdx);
+                                    app.scheduleRender();
+                                    app.deselectCell();
+                                }}
+                            />
+                        );
                     }
                 } else {
+                    // ── Scatter mode: no visibility toggle ──
+                    if (window.sidebarRoots.cellDetailVisibility) {
+                        window.sidebarRoots.cellDetailVisibility.render(null);
+                    }
+                    
                     // ── Scatter mode: Width / Height bound to individual cell dimensions ──
                     const cellData = app.freestyleCells[cellIdx];
                     const cellW = cellData ? Math.round(cellData.width) : 100;
@@ -943,12 +990,11 @@
                                     if (cellData) {
                                         app.selectedCellIndex = cellIdx;
                                         let newH = cellData.height;
-                                        // If locked, adjust height proportionally
                                         if (app.cellDetailAspectLocked && app.cellDetailLastAspectRatio) {
                                             newH = Math.max(10, Math.min(500, Math.round(value / app.cellDetailLastAspectRatio)));
                                         }
                                         app.applyCellDimensions(value, newH);
-                                        app.scheduleSidebarUpdate();
+                                        app.scheduleSidebarUpdate('cellDetail');
                                     }
                                 }}
                             />
@@ -967,12 +1013,11 @@
                                     if (cellData) {
                                         app.selectedCellIndex = cellIdx;
                                         let newW = cellData.width;
-                                        // If locked, adjust width proportionally
                                         if (app.cellDetailAspectLocked && app.cellDetailLastAspectRatio) {
                                             newW = Math.max(10, Math.min(500, Math.round(value * app.cellDetailLastAspectRatio)));
                                         }
                                         app.applyCellDimensions(newW, value);
-                                        app.scheduleSidebarUpdate();
+                                        app.scheduleSidebarUpdate('cellDetail');
                                     }
                                 }}
                             />
@@ -1178,6 +1223,7 @@
             
             // Cell detail panel (Panel 2)
             window.sidebarRoots.cellDetailTitle = ReactDOM.createRoot(document.getElementById('cellDetail-sectionTitle-root'));
+            window.sidebarRoots.cellDetailVisibility = ReactDOM.createRoot(document.getElementById('cellDetail-visibility-root'));
             window.sidebarRoots.cellDetailWidth = ReactDOM.createRoot(document.getElementById('cellDetail-width-root'));
             window.sidebarRoots.cellDetailLock = ReactDOM.createRoot(document.getElementById('cellDetail-lock-root'));
             window.sidebarRoots.cellDetailHeight = ReactDOM.createRoot(document.getElementById('cellDetail-height-root'));

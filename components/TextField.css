@@ -173,9 +173,7 @@
 }
 /* ═══════════════════════════════════════════════
    Dropdown panel (optional content below field)
-   ═══════════════════════════════════════════════ */
-
-.text-field-component.has-dropdown {
+   ═══════════════════════════════════════════════ */.text-field-component.has-dropdown {
   position: relative;
 }
 
@@ -209,4 +207,3 @@
     transform: translateY(0);
   }
 }
-

@@ -26,20 +26,24 @@ const Knob = ({
   onChange,
   showPercentage = false,
   disabled = false,
+  loading = false,
   className = ''
 }) => {
   const [isHovered, setIsHovered] = React.useState(false);
   const [isDragging, setIsDragging] = React.useState(false);
   const [isEditing, setIsEditing] = React.useState(false);
   const [editValue, setEditValue] = React.useState('');
+  const [dragValue, setDragValue] = React.useState(null);
   const knobRef = React.useRef(null);
   const inputRef = React.useRef(null);
+
+  const displayValue = isDragging && dragValue !== null ? dragValue : value;
 
   // ─── Rotation math ─────────────────────────
   const ARC_START = -133;
   const ARC_END = 133;
   const ARC_RANGE = ARC_END - ARC_START; // 266°
-  const percentage = max !== min ? (value - min) / (max - min) : 0;
+  const percentage = max !== min ? (displayValue - min) / (max - min) : 0;
   const rotation = ARC_START + percentage * ARC_RANGE;
 
   // ─── Dot ring generation ───────────────────
@@ -72,11 +76,13 @@ const Knob = ({
 
   const fire = (v) => { if (onChange) onChange(v); };
 
-  const showActive = isHovered || isDragging;
+  const showLoading = loading && !isDragging;
+  const interactionBlocked = disabled || showLoading;
+  const showActive = !showLoading && (isHovered || isDragging);
 
   // ─── Pointer drag ─────────────────────────
   const handlePointerDown = (e) => {
-    if (disabled) return;
+    if (interactionBlocked) return;
     e.preventDefault();
     setIsDragging(true);
 
@@ -87,10 +93,13 @@ const Knob = ({
     const onMove = (e) => {
       const dy = startY - e.clientY; // up = positive
       const sensitivity = range / 150; // 150 px → full range
-      fire(clamp(startVal + dy * sensitivity));
+      const v = clamp(startVal + dy * sensitivity);
+      setDragValue(v);
+      fire(v);
     };
 
     const onUp = () => {
+      setDragValue(null);
       setIsDragging(false);
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerup', onUp);
@@ -102,7 +111,7 @@ const Knob = ({
 
   // ─── Wheel ─────────────────────────────────
   const handleWheel = (e) => {
-    if (disabled) return;
+    if (interactionBlocked) return;
     e.preventDefault();
     const delta = e.deltaY < 0 ? step : -step;
     fire(clamp(value + delta));
@@ -110,7 +119,7 @@ const Knob = ({
 
   // ─── Keyboard (arrow keys) ─────────────────
   const handleKeyDown = (e) => {
-    if (disabled) return;
+    if (interactionBlocked) return;
     if (e.key === 'ArrowUp' || e.key === 'ArrowRight') {
       e.preventDefault();
       fire(clamp(value + step));
@@ -128,7 +137,7 @@ const Knob = ({
 
   // ─── Inline editing ───────────────────────
   const startEditing = () => {
-    if (disabled) return;
+    if (interactionBlocked) return;
     setIsEditing(true);
     setEditValue(String(value));
     // Focus input on next tick
@@ -161,9 +170,17 @@ const Knob = ({
   );
 
   // ─── Render ────────────────────────────────
+  const rootClasses = [
+    'knob-component',
+    disabled ? 'disabled' : '',
+    isDragging ? 'dragging' : '',
+    loading && !isDragging ? 'loading' : '',
+    className
+  ].filter(Boolean).join(' ');
+
   return (
     <div
-      className={`knob-component ${disabled ? 'disabled' : ''} ${isDragging ? 'dragging' : ''} ${className}`}
+      className={rootClasses}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -192,12 +209,13 @@ const Knob = ({
           onPointerDown={handlePointerDown}
           onWheel={handleWheel}
           onKeyDown={handleKeyDown}
-          tabIndex={disabled ? -1 : 0}
+          tabIndex={interactionBlocked ? -1 : 0}
           role="slider"
           aria-valuenow={value}
           aria-valuemin={min}
           aria-valuemax={max}
           aria-label={label}
+          aria-busy={showLoading}
         >
           <div className="knob-outer">
             <div className="knob-inner">
@@ -211,8 +229,12 @@ const Knob = ({
 
       {/* Value field — both layers always rendered, crossfade via opacity */}
       <div className={`knob-value-field ${showActive ? 'active' : ''}`}>
-        {/* Label layer — visible at rest, fades out on hover */}
-        <span className="knob-label-layer">{label}</span>
+        {/* Label layer — visible at rest & loading, fades out on hover */}
+        <span className={`knob-label-layer ${showLoading ? 'knob-label-loading' : ''}`}>
+          {showLoading
+            ? <span className="knob-loading-text">Workin' on it</span>
+            : label}
+        </span>
 
         {/* Value layer — fades in on hover */}
         <div className="knob-value-layer">
@@ -229,7 +251,7 @@ const Knob = ({
               />
             ) : (
               <span className="knob-value-text" onClick={startEditing}>
-                {String(value)}
+                {String(displayValue)}
               </span>
             )}
             {showPercentage && <span className="knob-suffix">%</span>}

@@ -118,12 +118,14 @@ html.dark-mode .segmented-control-icon img,
 html.dark-mode .text-field-icon img,
 html.dark-mode .image-replacer-reset img,
 html.dark-mode .image-replacer-placeholder img,
+html.dark-mode .section-title-icon img,
 .dark-mode .button-icon img,
 .dark-mode .select-icon img,
 .dark-mode .segmented-control-icon img,
 .dark-mode .text-field-icon img,
 .dark-mode .image-replacer-reset img,
 .dark-mode .image-replacer-placeholder img,
+.dark-mode .section-title-icon img,
 .dark-mode .knob-reset img {
     filter: invert(1) brightness(0.9);
 }
@@ -135,6 +137,7 @@ html.dark-mode .image-replacer-placeholder img,
     html:not(.light-mode) .text-field-icon img,
     html:not(.light-mode) .image-replacer-reset img,
     html:not(.light-mode) .image-replacer-placeholder img,
+    html:not(.light-mode) .section-title-icon img,
     html:not(.light-mode) .knob-reset img {
         filter: invert(1) brightness(0.9);
     }
@@ -210,7 +213,7 @@ body {
     font-size: 14px;
     font-weight: 500;
     z-index: 1000;
-    transition: all 0.2s;
+    transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
     box-shadow: 
         0px 0.45px 0.63px -1px rgba(0, 0, 0, 0.26),
         0px 1.21px 1.71px -1.5px rgba(0, 0, 0, 0.25),
@@ -370,6 +373,31 @@ body {
     display: none;
 }
 
+/* Animated reveal/hide for conditional sidebar panels (bg color / image).
+   Uses CSS grid row collapse for smooth height animation. */
+.sidebar-reveal {
+    display: grid;
+    grid-template-rows: 0fr;
+    opacity: 0;
+    transition: grid-template-rows 0.2s cubic-bezier(0.33, 1, 0.68, 1),
+                opacity 0.15s ease;
+    pointer-events: none;
+}
+
+.sidebar-reveal-inner {
+    overflow: hidden;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: inherit;
+}
+
+.sidebar-reveal.active {
+    grid-template-rows: 1fr;
+    opacity: 1;
+    pointer-events: auto;
+}
+
 /* Section: Export */
 .section-export .section-content {
     gap: var(--spacing-200); /* 8px */
@@ -517,7 +545,7 @@ body {
     border: 1px solid var(--border-default);
     border-radius: var(--radius-lg);
     cursor: pointer;
-    transition: all 0.2s;
+    transition: background 0.2s;
     font-size: 14px;
     font-weight: 500;
     width: 100%;
@@ -541,7 +569,7 @@ button {
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: background 0.2s;
     font-family: 'Alpha Lyrae', sans-serif;
     display: flex;
     align-items: center;
@@ -568,7 +596,7 @@ button:focus {
     font-weight: 500;
     font-family: 'Alpha Lyrae', sans-serif;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: background 0.2s, box-shadow 0.2s;
     box-shadow: 
         0px 0.45px 0.63px -1px rgba(0, 0, 0, 0.26),
         0px 1.21px 1.71px -1.5px rgba(0, 0, 0, 0.25),
@@ -665,7 +693,7 @@ button:focus {
     border: none;
     border-radius: var(--radius-lg);
     cursor: pointer;
-    transition: all 0.2s;
+    transition: background 0.2s;
     color: var(--content-primary);
     font-size: 14px;
     font-weight: 500;
@@ -704,7 +732,7 @@ button:focus {
     border: none;
     border-radius: var(--radius-lg);
     cursor: pointer;
-    transition: all 0.2s;
+    transition: background 0.2s;
     color: var(--content-primary);
 }
 
@@ -1069,7 +1097,7 @@ button:focus {
     position: absolute;
     background: rgba(128, 128, 128, 0.8);
     pointer-events: none;
-    z-index: 10;
+    z-index: 1001;
     opacity: 0;
     transition: opacity 0.2s ease;
 }
@@ -1110,6 +1138,41 @@ button:focus {
     overflow: hidden;
     background-color: transparent;
     cursor: move;
+}
+
+/* Skeleton grid shown during Count knob drag */
+.grid-skeleton {
+    position: relative;
+}
+.grid-skeleton::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(128, 128, 128, 0.25);
+    animation: skeleton-pulse 0.8s linear infinite alternate;
+    pointer-events: none;
+    z-index: 1;
+}
+.grid-skeleton .grid-cell {
+    cursor: default;
+    transition: none;
+    background-image: none;
+    background-color: rgba(128, 128, 128, 0.15);
+}
+.grid-skeleton .grid-cell::after { display: none; }
+
+@keyframes skeleton-pulse {
+    0%   { opacity: 0.6; }
+    100% { opacity: 1; }
+}
+
+/* Fade-in when the full image grid replaces the skeleton */
+.grid-reveal {
+    animation: gridReveal 200ms ease-out;
+}
+@keyframes gridReveal {
+    from { opacity: .4; }
+    to   { opacity: 1; }
 }
 
 /* Subtle hover overlay — lightens cell on hover, adapts via screen blend */
