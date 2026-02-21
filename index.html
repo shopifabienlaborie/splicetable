@@ -4,22 +4,27 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Osmosis - Image Grid Splitter</title>
-    <link rel="stylesheet" href="style.css?v=8">
-    <link rel="stylesheet" href="components/Button.css?v=3">
-    <link rel="stylesheet" href="components/SegmentedControl.css?v=4">
-    <link rel="stylesheet" href="components/ImageReplacer.css">
-    <link rel="stylesheet" href="components/Navbar.css">
-    <link rel="stylesheet" href="components/Select.css?v=2">
-    <link rel="stylesheet" href="components/Slider.css">
-    <link rel="stylesheet" href="components/Knob.css?v=1">
-    <link rel="stylesheet" href="components/TextField.css?v=6">
-    <link rel="stylesheet" href="components/Divider.css">
-    <link rel="stylesheet" href="components/SectionTitle.css?v=2">
-    <link rel="stylesheet" href="components/Control.css?v=1">
+    <link rel="stylesheet" href="style.css?v=9">
+    <link rel="stylesheet" href="lib/osmosis-ds.css">
     <script src="https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js"></script>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="lib/osmosis-ds.umd.js"></script>
+    <script>
+        var OsmosisDS = window.OsmosisDS;
+        window.Button = OsmosisDS.Button;
+        window.Control = OsmosisDS.Control;
+        window.Divider = OsmosisDS.Divider;
+        window.ImageReplacer = OsmosisDS.ImageReplacer;
+        window.Knob = OsmosisDS.Knob;
+        window.Navbar = OsmosisDS.Navbar;
+        window.SectionTitle = OsmosisDS.SectionTitle;
+        window.SegmentedControl = OsmosisDS.SegmentedControl;
+        window.Select = OsmosisDS.Select;
+        window.Slider = OsmosisDS.Slider;
+        window.TextField = OsmosisDS.TextField;
+    </script>
 </head>
 <body>
     <!-- Navbar with React components -->
@@ -181,19 +186,6 @@
 
     <!-- Hidden file input for image upload -->
     <input type="file" id="imageUpload" accept="image/*" style="display: none;">
-
-    <!-- Load React Components -->
-    <script type="text/babel" data-type="module" src="components/Button.jsx"></script>
-    <script type="text/babel" data-type="module" src="components/SegmentedControl.jsx"></script>
-    <script type="text/babel" data-type="module" src="components/ImageReplacer.jsx"></script>
-    <script type="text/babel" data-type="module" src="components/Navbar.jsx"></script>
-    <script type="text/babel" data-type="module" src="components/Select.jsx"></script>
-    <script type="text/babel" data-type="module" src="components/Slider.jsx"></script>
-    <script type="text/babel" data-type="module" src="components/Knob.jsx"></script>
-    <script type="text/babel" data-type="module" src="components/TextField.jsx"></script>
-    <script type="text/babel" data-type="module" src="components/Divider.jsx"></script>
-    <script type="text/babel" data-type="module" src="components/SectionTitle.jsx"></script>
-    <script type="text/babel" data-type="module" src="components/Control.jsx"></script>
 
     <!-- Initialize Navbar and Sidebar Components -->
     <script type="text/babel">
