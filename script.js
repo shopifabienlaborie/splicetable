@@ -280,6 +280,7 @@ class ImageGridSplitter {
         // Debounce the full image render until the user stops dragging
         clearTimeout(this._countDebounceTimer);
         this._countDebounceTimer = setTimeout(() => {
+            if (this.mode === 'freestyle') this.initializeFreestyleCells();
             if (this.contentMode === 'color') this.extractColorsForGrid();
             this.renderContent();
             this._countKnobLoading = false;
@@ -1225,9 +1226,10 @@ class ImageGridSplitter {
         const scaleMultiplier = this.scale / 100;
         const baseCellWidth = containerWidth / cols;
         const baseCellHeight = containerHeight / rows;
+        const baseCellSize = Math.min(baseCellWidth, baseCellHeight);
         
-        const cellWidth = baseCellWidth * scaleMultiplier;
-        const cellHeight = baseCellHeight * scaleMultiplier;
+        const cellWidth = baseCellSize * scaleMultiplier;
+        const cellHeight = baseCellSize * scaleMultiplier;
         
         // Calculate the grid layout dimensions
         const gridWidth = cellWidth * cols;
