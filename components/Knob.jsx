@@ -11,6 +11,7 @@
  * - step: number (default: 1)
  * - defaultValue: number — value for reset (defaults to min)
  * - onChange: function(value) — called when value changes
+ * - onChangeEnd: function(value) — called once when drag ends
  * - showPercentage: boolean — append % suffix (default: false)
  * - disabled: boolean
  * - className: string
@@ -24,6 +25,7 @@ const Knob = ({
   step = 1,
   defaultValue,
   onChange,
+  onChangeEnd,
   showPercentage = false,
   disabled = false,
   loading = false,
@@ -90,10 +92,12 @@ const Knob = ({
     const startVal = value;
     const range = max - min;
 
+    let lastDragValue = startVal;
     const onMove = (e) => {
       const dy = startY - e.clientY; // up = positive
       const sensitivity = range / 150; // 150 px → full range
       const v = clamp(startVal + dy * sensitivity);
+      lastDragValue = v;
       setDragValue(v);
       fire(v);
     };
@@ -103,6 +107,7 @@ const Knob = ({
       setIsDragging(false);
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerup', onUp);
+      if (onChangeEnd) onChangeEnd(lastDragValue);
     };
 
     window.addEventListener('pointermove', onMove);

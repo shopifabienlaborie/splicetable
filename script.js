@@ -74,6 +74,7 @@ class ImageGridSplitter {
         
         // ─── Performance: render throttling ───────────────
         this._renderPending = false;
+        this._layoutPending = false;
         this._sidebarUpdatePending = false;
         this._cellImageCache = null;       // Map<string, dataURL>
         this._cellImageCacheKey = null;    // tracks image + gridSize for invalidation
@@ -420,48 +421,36 @@ class ImageGridSplitter {
 
     applyCellDimensions(width, height) {
         if (this.selectedCellIndex !== null) {
-            // Apply to selected cell only (resize from center)
             const cells = document.querySelectorAll('.freestyle-cell');
             const cell = cells[this.selectedCellIndex];
             const cellData = this.freestyleCells[this.selectedCellIndex];
             if (cell && cellData) {
-                // Get current DOM dimensions
-                const currentWidth = cell.offsetWidth;
-                const currentHeight = cell.offsetHeight;
-                
-                // Get current transform offset
-                const transformX = parseFloat(cell.getAttribute('data-x')) || 0;
-                const transformY = parseFloat(cell.getAttribute('data-y')) || 0;
-                
-                // Calculate position delta to keep center fixed
+                const currentWidth = parseFloat(cell.style.width) || cell.offsetWidth;
+                const currentHeight = parseFloat(cell.style.height) || cell.offsetHeight;
                 const deltaW = width - currentWidth;
                 const deltaH = height - currentHeight;
-                
-                // Adjust transform to compensate (move by half the size change)
-                const newTransformX = transformX - deltaW / 2;
-                const newTransformY = transformY - deltaH / 2;
-                
-                // Update DOM
+
+                // Accumulate center compensation in data-x/data-y
+                const ox = (parseFloat(cell.getAttribute('data-x')) || 0) - deltaW / 2;
+                const oy = (parseFloat(cell.getAttribute('data-y')) || 0) - deltaH / 2;
+                cell.setAttribute('data-x', ox);
+                cell.setAttribute('data-y', oy);
+
                 cell.style.width = `${width}px`;
                 cell.style.height = `${height}px`;
-                cell.style.transform = `translate(${newTransformX}px, ${newTransformY}px)`;
-                cell.setAttribute('data-x', newTransformX);
-                cell.setAttribute('data-y', newTransformY);
-                
-                // Recalculate border radius for new dimensions
+
                 if (this.cellBorderRadius > 0) {
                     cell.style.borderRadius = `${this.getBorderRadiusPx(width, height)}px`;
                 }
-                
-                // Update cell data (keep original x/y, just update dimensions)
+
                 cellData.width = width;
                 cellData.height = height;
-                
-                // Mark as individually modified (won't inherit group changes)
                 cellData.individuallyModified = true;
+
+                // Rebuild this cell's transform (spread + scale + rotation + offset)
+                this._updateFreestyleCellStyles();
             }
         } else {
-            // Apply to all cells (except individually modified ones)
             this.resizeAllCellsToSize(width, height);
         }
     }
@@ -754,6 +743,25 @@ class ImageGridSplitter {
         return false;
     }
 
+    createDisplayImage(fullImage, maxDim = 1400) {
+        if (fullImage.width <= maxDim && fullImage.height <= maxDim) {
+            return Promise.resolve(fullImage);
+        }
+        const scale = maxDim / Math.max(fullImage.width, fullImage.height);
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.round(fullImage.width * scale);
+        canvas.height = Math.round(fullImage.height * scale);
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(fullImage, 0, 0, canvas.width, canvas.height);
+        const img = new Image();
+        return new Promise(resolve => {
+            img.onload = () => resolve(img);
+            img.src = this._imageHasAlpha
+                ? canvas.toDataURL('image/png')
+                : canvas.toDataURL('image/jpeg', 0.92);
+        });
+    }
+
     handleImageUpload(event) {
         const file = event.target.files[0];
         if (!file) return;
@@ -765,9 +773,10 @@ class ImageGridSplitter {
             this.imageDataURL = e.target.result;
             this.currentImageSrc = this.imageDataURL;
             const img = new Image();
-            img.onload = () => {
+            img.onload = async () => {
                 this.image = img;
                 this._imageHasAlpha = this.detectImageAlpha(img);
+                this.displayImage = await this.createDisplayImage(img);
                 this.resetToDefaults();
                 this.initializeForMode();
                 this.renderContent();
@@ -810,12 +819,13 @@ class ImageGridSplitter {
                 this._imageHasAlpha = hasAlpha;
                 this.imageDataURL = hasAlpha
                     ? canvas.toDataURL('image/png')
-                    : canvas.toDataURL('image/jpeg', 0.95);
+                    : canvas.toDataURL('image/jpeg', 0.85);
                 this.currentImageSrc = this.imageDataURL;
                 
                 const finalImg = new Image();
-                finalImg.onload = () => {
+                finalImg.onload = async () => {
                     this.image = finalImg;
+                    this.displayImage = await this.createDisplayImage(finalImg);
                     this.currentFileName = fileName;
                     this.resetToDefaults();
                     this.initializeForMode();
@@ -1193,6 +1203,7 @@ class ImageGridSplitter {
     }
 
     initializeFreestyleCells() {
+        this._freestyleCellsJustRebuilt = true;
         this.freestyleCells = [];
         
         // Use the image/canvas aspect ratio so scatter cells match the
@@ -1598,6 +1609,7 @@ class ImageGridSplitter {
             this._renderPending = true;
             requestAnimationFrame(() => {
                 this._renderPending = false;
+                this._freestyleCellsJustRebuilt = false;
                 this.renderContent();
             });
         }
@@ -1630,24 +1642,36 @@ class ImageGridSplitter {
     }
 
     /**
-     * Fast path: update only CSS layout styles on existing cells.
-     * Skips the expensive full DOM rebuild + canvas re-extraction.
-     * Use for: cellSize, cellSpread, cellTumble, cellBorderRadius, canvasScale.
+     * Schedule a layout-only update on the next animation frame.
+     * Coalesces multiple calls within the same frame into one pass.
      */
     updateLayoutStyles() {
         if (!this.image) return;
+        if (!this._layoutPending) {
+            this._layoutPending = true;
+            requestAnimationFrame(() => {
+                this._layoutPending = false;
+                this._applyLayoutStyles();
+            });
+        }
+    }
 
-        // Update content wrapper scale
-        const contentWrapper = this.gridContainer.querySelector('.canvas-content-wrapper');
+    _applyLayoutStyles() {
+        if (!this.image) return;
+
+        const contentWrapper = this._canvasContentWrapper
+            || this.gridContainer.querySelector('.canvas-content-wrapper');
         if (contentWrapper) {
             contentWrapper.style.transform = `scale(${this.canvasScale / 100})`;
         }
 
         if (this.mode === 'grid') {
             this._updateGridCellStyles();
-        } else {
-            // Freestyle/scatter: full rebuild needed for position recalc
+        } else if (this._freestyleCellsJustRebuilt) {
+            this._freestyleCellsJustRebuilt = false;
             this.scheduleRender();
+        } else {
+            this._updateFreestyleCellStyles();
         }
     }
 
@@ -1687,6 +1711,64 @@ class ImageGridSplitter {
 
             cell.style.transform = transforms.length > 0 ? transforms.join(' ') : '';
             cell.style.borderRadius = radiusPx > 0 ? `${radiusPx}px` : '';
+        });
+    }
+
+    /**
+     * Fast path: update CSS on existing freestyle/scatter cells.
+     * Handles cellSize (scale), cellSpread (position), cellTumble (rotation),
+     * and cellBorderRadius without a full DOM rebuild.
+     */
+    _updateFreestyleCellStyles() {
+        const cells = this.gridContainer.querySelectorAll('.freestyle-cell');
+        if (cells.length === 0) { this.scheduleRender(); return; }
+
+        const geo = this._freestyleLayoutGeometry;
+        if (!geo) { this.scheduleRender(); return; }
+
+        const { scale, offsetX, offsetY, canvasWidth, canvasHeight } = geo;
+        const cxCenter = canvasWidth / 2;
+        const cyCenter = canvasHeight / 2;
+        const spreadValue = this.cellSpread !== undefined ? this.cellSpread : this.freestyleCellSpread;
+        const spreadFactor = 1 + (spreadValue / 100);
+        const hasScale = this.cellSize !== 0;
+        const scaleFactor = hasScale ? 1 + this.cellSize / 100 : 1;
+        const hasTumble = this.cellTumble > 0;
+        const tumbleScale = hasTumble ? (this.cellTumble / 100) * 280 : 0;
+        const hasRadius = this.cellBorderRadius > 0;
+
+        cells.forEach((cell) => {
+            const idx = parseInt(cell.dataset.index);
+            const cellData = this.freestyleCells[idx];
+            if (!cellData) return;
+
+            // Compute spread offset from base position (pure math, no DOM reads)
+            const baseX = cellData.x * scale + offsetX;
+            const baseY = cellData.y * scale + offsetY;
+            const w = cellData.width * scale;
+            const h = cellData.height * scale;
+            const sx = (baseX + w / 2 - cxCenter) * (spreadFactor - 1);
+            const sy = (baseY + h / 2 - cyCenter) * (spreadFactor - 1);
+
+            // Include drag/resize offsets stored in data-x/data-y
+            const dx = parseFloat(cell.getAttribute('data-x')) || 0;
+            const dy = parseFloat(cell.getAttribute('data-y')) || 0;
+            const tx = sx + dx;
+            const ty = sy + dy;
+
+            const transforms = [];
+            if (tx !== 0 || ty !== 0) transforms.push(`translate(${tx}px,${ty}px)`);
+            if (hasScale) transforms.push(`scale(${scaleFactor})`);
+            if (hasTumble && cellData.rotationFactor !== undefined) {
+                transforms.push(`rotate(${cellData.rotationFactor * tumbleScale}deg)`);
+            }
+            cell.style.transform = transforms.length > 0 ? transforms.join(' ') : '';
+
+            if (hasRadius) {
+                cell.style.borderRadius = `${this.getBorderRadiusPx(cellData.width, cellData.height)}px`;
+            } else {
+                cell.style.borderRadius = '0px';
+            }
         });
     }
 
@@ -1940,13 +2022,13 @@ class ImageGridSplitter {
         grid.style.gridTemplateColumns = columnTemplate;
         grid.style.gridTemplateRows = rowTemplate;
 
-        if (this.contentMode === 'image' && this.imageFit === 'fill') {
-            grid.style.setProperty('--cell-bg', `url("${this.image.src}")`);
+        if (this.contentMode === 'image') {
+            const displaySrc = (this.displayImage || this.image).src;
+            grid.style.setProperty('--cell-bg', `url("${displaySrc}")`);
             grid.style.setProperty('--cell-bg-size', `${this.gridSize * 100}% ${this.gridSize * 100}%`);
         }
 
         // Build all cells as a single HTML string — 3-5× faster than N² createElement calls.
-        // The browser's HTML parser is heavily optimised for this pattern.
         const gs = this.gridSize;
         const parts = new Array(gs * gs);
         const hasRadius = this.cellBorderRadius > 0 && this.image;
@@ -1960,7 +2042,7 @@ class ImageGridSplitter {
         const hasTumble = this.cellTumble > 0;
         const tumbleScale = (this.cellTumble / 100) * 280;
         const isColor = this.contentMode === 'color';
-        const isFill = this.imageFit === 'fill';
+        const isImage = this.contentMode === 'image';
 
         for (let row = 0; row < gs; row++) {
             for (let col = 0; col < gs; col++) {
@@ -1972,13 +2054,10 @@ class ImageGridSplitter {
                 if (isColor) {
                     const c = (this.gridCellColors && this.gridCellColors[idx]) || 'rgb(128,128,128)';
                     s += `;background-color:${c};background-image:none;box-shadow:0 0 0 .5px ${c}`;
-                } else if (isFill) {
+                } else if (isImage) {
                     const px = gs > 1 ? (col / (gs - 1)) * 100 : 0;
                     const py = gs > 1 ? (row / (gs - 1)) * 100 : 0;
                     s += `;background-image:var(--cell-bg);background-size:var(--cell-bg-size);background-position:${px}% ${py}%`;
-                } else {
-                    const url = this.getCachedCellImage(row, col, gs, this.image);
-                    s += `;background-image:url(${url});background-size:cover;background-position:center`;
                 }
 
                 if (hasRadius) s += `;border-radius:${radiusPx}px`;
@@ -2054,8 +2133,9 @@ class ImageGridSplitter {
         const container = document.createElement('div');
         container.className = 'freestyle-container';
 
-        if (this.contentMode === 'image' && this.imageFit === 'fill' && this.image) {
-            container.style.setProperty('--cell-bg', `url("${this.image.src}")`);
+        if (this.contentMode === 'image' && this.image) {
+            const displaySrc = (this.displayImage || this.image).src;
+            container.style.setProperty('--cell-bg', `url("${displaySrc}")`);
         }
 
         this.freestyleCells.forEach((cellData, index) => {
@@ -2089,12 +2169,12 @@ class ImageGridSplitter {
         container.className = 'freestyle-container';
         container.style.position = 'relative';
 
-        if (this.contentMode === 'image' && this.imageFit === 'fill' && this.image) {
-            container.style.setProperty('--cell-bg', `url("${this.image.src}")`);
+        if (this.contentMode === 'image' && this.image) {
+            const displaySrc = (this.displayImage || this.image).src;
+            container.style.setProperty('--cell-bg', `url("${displaySrc}")`);
         }
         
         // Calculate base grid bounds (from baseX/baseY, ignoring chaos offsets)
-        // This ensures scaling matches Stretch mode regardless of chaos level
         let minX = Infinity, minY = Infinity;
         let maxX = -Infinity, maxY = -Infinity;
 
@@ -2122,6 +2202,9 @@ class ImageGridSplitter {
         container.style.width = `${canvasWidth}px`;
         container.style.height = `${canvasHeight}px`;
 
+        // Cache layout geometry for fast-path CSS-only updates
+        this._freestyleLayoutGeometry = { scale, offsetX, offsetY, canvasWidth, canvasHeight };
+
         // Calculate center of canvas for spread using unified cellSpread
         const canvasCenterX = canvasWidth / 2;
         const canvasCenterY = canvasHeight / 2;
@@ -2130,25 +2213,31 @@ class ImageGridSplitter {
 
         this.freestyleCells.forEach((cellData, index) => {
             const cell = this.createFreestyleCell(cellData, index);
-            // Adjust position for canvas centering
-            let newX = cellData.x * scale + offsetX;
-            let newY = cellData.y * scale + offsetY;
+            const baseX = cellData.x * scale + offsetX;
+            const baseY = cellData.y * scale + offsetY;
             const newWidth = cellData.width * scale;
             const newHeight = cellData.height * scale;
-            
-            // Apply spread from center
-            const cellCenterX = newX + newWidth / 2;
-            const cellCenterY = newY + newHeight / 2;
-            const spreadX = (cellCenterX - canvasCenterX) * (spreadFactor - 1);
-            const spreadY = (cellCenterY - canvasCenterY) * (spreadFactor - 1);
-            newX += spreadX;
-            newY += spreadY;
-            
-            cell.style.left = `${newX}px`;
-            cell.style.top = `${newY}px`;
+
+            // Base position via left/top (set once, stable across knob drags)
+            cell.style.left = `${baseX}px`;
+            cell.style.top = `${baseY}px`;
             cell.style.width = `${newWidth}px`;
             cell.style.height = `${newHeight}px`;
-            
+
+            // Dynamic adjustments via transform (compositor-only, no layout)
+            const cellCenterX = baseX + newWidth / 2;
+            const cellCenterY = baseY + newHeight / 2;
+            const sx = (cellCenterX - canvasCenterX) * (spreadFactor - 1);
+            const sy = (cellCenterY - canvasCenterY) * (spreadFactor - 1);
+
+            const transforms = [];
+            if (sx !== 0 || sy !== 0) transforms.push(`translate(${sx}px, ${sy}px)`);
+            if (this.cellSize !== 0) transforms.push(`scale(${1 + this.cellSize / 100})`);
+            if (this.cellTumble > 0 && cellData.rotationFactor !== undefined) {
+                transforms.push(`rotate(${cellData.rotationFactor * (this.cellTumble / 100) * 280}deg)`);
+            }
+            cell.style.transform = transforms.length > 0 ? transforms.join(' ') : '';
+
             container.appendChild(cell);
         });
 
@@ -2239,7 +2328,6 @@ class ImageGridSplitter {
             cell.style.borderRadius = '0px';
         }
         
-        // Set cell content based on contentMode
         if (this.contentMode === 'color') {
             const cellIndex = cellData.imageRow * cellData.imageCols + cellData.imageCol;
             const color = this.gridCellColors && this.gridCellColors[cellIndex]
@@ -2248,19 +2336,13 @@ class ImageGridSplitter {
             cell.style.backgroundColor = color;
             cell.style.backgroundImage = 'none';
             cell.style.boxShadow = `0 0 0 0.5px ${color}`;
-        } else if (this.imageFit === 'fill') {
+        } else {
             const cols = cellData.imageCols;
             cell.style.backgroundImage = 'var(--cell-bg)';
             cell.style.backgroundSize = `${cols * 100}% ${cols * 100}%`;
             const posX = cols > 1 ? (cellData.imageCol / (cols - 1)) * 100 : 0;
             const posY = cols > 1 ? (cellData.imageRow / (cols - 1)) * 100 : 0;
             cell.style.backgroundPosition = `${posX}% ${posY}%`;
-        } else {
-            const cols = cellData.imageCols;
-            const dataURL = this.getCachedCellImage(cellData.imageRow, cellData.imageCol, cols, this.image);
-            cell.style.backgroundImage = `url(${dataURL})`;
-            cell.style.backgroundSize = 'cover';
-            cell.style.backgroundPosition = 'center';
         }
         
         // Build combined transform: scale (from cellSize) + rotation (from cellTumble)
@@ -2333,9 +2415,9 @@ class ImageGridSplitter {
                         const x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx;
                         const y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;
 
-                        target.style.transform = `translate(${x}px, ${y}px)`;
                         target.setAttribute('data-x', x);
                         target.setAttribute('data-y', y);
+                        self._updateFreestyleCellStyles();
                     }
                 }
             })
@@ -2370,40 +2452,29 @@ class ImageGridSplitter {
                             target.classList.remove('snapped');
                         }
 
-                        // If this cell is selected, resize only this cell; otherwise resize all
                         if (self.selectedCellIndex === index) {
                             target.style.width = `${newWidth}px`;
                             target.style.height = `${newHeight}px`;
 
                             x += event.deltaRect.left;
                             y += event.deltaRect.top;
-
-                            target.style.transform = `translate(${x}px, ${y}px)`;
                             target.setAttribute('data-x', x);
                             target.setAttribute('data-y', y);
-                            
-                            // Recalculate border radius for new dimensions
+
                             if (self.cellBorderRadius > 0) {
                                 target.style.borderRadius = `${self.getBorderRadiusPx(newWidth, newHeight)}px`;
                             }
 
-                            // Update cell data
                             self.freestyleCells[index].width = newWidth;
                             self.freestyleCells[index].height = newHeight;
-                            self.freestyleCells[index].x = parseFloat(target.style.left) + x;
-                            self.freestyleCells[index].y = parseFloat(target.style.top) + y;
-                            
-                            // Mark as individually modified
                             self.freestyleCells[index].individuallyModified = true;
-                            
-                            // Update dimension values and sliders
+
+                            self._updateFreestyleCellStyles();
                             self.cellWidthValue = Math.round(newWidth);
                             self.cellHeightValue = Math.round(newHeight);
                             self.scheduleSidebarUpdate('cellDetail');
                         } else {
                             self.resizeAllCellsToSize(newWidth, newHeight, index);
-                            
-                            // Update dimension values and sliders
                             self.cellWidthValue = Math.round(newWidth);
                             self.cellHeightValue = Math.round(newHeight);
                             self.scheduleSidebarUpdate('cellDetail');
@@ -2424,44 +2495,35 @@ class ImageGridSplitter {
         const cells = document.querySelectorAll('.freestyle-cell');
         
         this.freestyleCells.forEach((cellData, idx) => {
-            // Skip individually modified cells
             if (cellData.individuallyModified) return;
             
             const cell = cells[idx];
             if (!cell) return;
             
-            // Get current DOM dimensions
-            const currentWidth = cell.offsetWidth;
-            const currentHeight = cell.offsetHeight;
-            
-            // Get current transform offset
-            const transformX = parseFloat(cell.getAttribute('data-x')) || 0;
-            const transformY = parseFloat(cell.getAttribute('data-y')) || 0;
-            
-            // Calculate position delta to keep center fixed
+            const currentWidth = parseFloat(cell.style.width) || cell.offsetWidth;
+            const currentHeight = parseFloat(cell.style.height) || cell.offsetHeight;
             const deltaW = width - currentWidth;
             const deltaH = height - currentHeight;
-            
-            // Adjust transform to compensate (move by half the size change)
-            const newTransformX = transformX - deltaW / 2;
-            const newTransformY = transformY - deltaH / 2;
-            
-            // Update cell data (keep original x/y, just update dimensions)
+
+            // Accumulate center compensation in data-x/data-y
+            const ox = (parseFloat(cell.getAttribute('data-x')) || 0) - deltaW / 2;
+            const oy = (parseFloat(cell.getAttribute('data-y')) || 0) - deltaH / 2;
+            cell.setAttribute('data-x', ox);
+            cell.setAttribute('data-y', oy);
+
             cellData.width = width;
             cellData.height = height;
-            
-            // Update DOM
+
             cell.style.width = `${width}px`;
             cell.style.height = `${height}px`;
-            cell.style.transform = `translate(${newTransformX}px, ${newTransformY}px)`;
-            cell.setAttribute('data-x', newTransformX);
-            cell.setAttribute('data-y', newTransformY);
-            
-            // Recalculate border radius for new dimensions
+
             if (this.cellBorderRadius > 0) {
                 cell.style.borderRadius = `${this.getBorderRadiusPx(width, height)}px`;
             }
         });
+
+        // Rebuild transforms so spread/scale/rotation + resize offsets are all applied
+        this._updateFreestyleCellStyles();
     }
 
     updateCellShapes() {

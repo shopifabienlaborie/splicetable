@@ -98,6 +98,7 @@ body {
     background: transparent;
     display: none;
     z-index: 100;
+    contain: layout style;
 }
 
 .sidebar-wrapper.visible {
@@ -658,6 +659,7 @@ button:focus {
     justify-content: center;
     overflow: hidden;
     background: var(--surface-below);
+    contain: layout style;
 }
 
 /* Adjust left margin when sidebar is visible */
@@ -968,6 +970,8 @@ button:focus {
     overflow: hidden;
     background-color: transparent;
     cursor: move;
+    contain: strict;
+    will-change: transform;
 }
 
 /* Skeleton grid shown during Count knob drag */
@@ -1039,6 +1043,7 @@ button:focus {
     cursor: move;
     transition: none;
     touch-action: none;
+    contain: strict;
     will-change: transform;
 }
 
