@@ -1,0 +1,272 @@
+/**
+ * Segmented Control Component Styles
+ * 3-layer design matching Button pattern:
+ *   Root (gradient frame) → Item outer (elevated surface) → Item inner (content surface)
+ * Root is shared across all items. Each item has a 2-layer structure.
+ * Items anchor to the bottom; inactive items overflow upward.
+ * Hover lifts via padding change (outer grows). Press flattens via padding redistribution.
+ */
+
+/* ═══════════════════════════════════════════════
+   Root: Gradient frame (same tokens as Button root)
+   ═══════════════════════════════════════════════ */
+
+.segmented-control {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  gap: var(--spacing-025); /* 1px between items */
+  padding: var(--spacing-025); /* 1px all around */
+  height: 30px;
+  width: fit-content;
+  border-radius: var(--radius-sm);
+  box-shadow: 0px 1px 0px 0px var(--outer-bottom-light);
+  background: linear-gradient(
+    180deg,
+    var(--fake-drop-shadow) 0%,
+    var(--surface-profound) 5.89%,
+    var(--surface-profound) 47%,
+    var(--fake-drop-shadow) 98.77%
+  );
+  overflow: visible;
+  font-family: 'Alpha Lyrae', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.segmented-control.full-width {
+  width: 100%;
+}
+
+.segmented-control.disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* ═══════════════════════════════════════════════
+   Item outer: Elevated surface (same tokens as Button outer)
+   ═══════════════════════════════════════════════ */
+
+.segmented-control-item {
+  /* Reset button defaults */
+  -webkit-appearance: none;
+  appearance: none;
+  border: none;
+  outline: none;
+  font: inherit;
+  color: inherit;
+
+  position: relative; /* containing block for gap-bridge pseudo-element */
+  flex: 1 0 0;
+  display: flex;
+  align-items: stretch;
+  min-width: 0;
+  min-height: 0;
+  cursor: pointer;
+
+  /* Inactive default: surface-below bg, 4px bottom padding, high elevation shadow */
+  background: var(--surface-below);
+  padding: 0 0 var(--spacing-100) 0; /* top:0  right:0  bottom:4px  left:0 */
+
+  /* High elevation shadow (same as Button outer) */
+  box-shadow:
+    0px 3.487px 6.974px 0px rgba(0, 0, 0, 0.16),
+    0px 9.432px 18.864px 0px rgba(0, 0, 0, 0.13),
+    0px 16px 32px 0px rgba(0, 0, 0, 0.09),
+    0px 22.567px 45.134px 0px rgba(0, 0, 0, 0.05),
+    0px 28.513px 57.026px 0px rgba(0, 0, 0, 0.02),
+    0px 32px 64px 0px rgba(0, 0, 0, 0);
+
+  transition: padding 150ms cubic-bezier(0.25, 1, 0.45, 1), box-shadow 150ms cubic-bezier(0.25, 1, 0.45, 1), background 150ms cubic-bezier(0.25, 1, 0.45, 1);
+
+  /* Inactive items stack above active so their shadows cast over it */
+  z-index: 1;
+}
+
+/* ─── Position-dependent border radii ─── */
+
+/* First item: large radius on left, small on right */
+.segmented-control-item.position-first,
+.segmented-control-item.position-first .sc-item-inner {
+  border-radius: var(--radius-lg) var(--radius-sm) var(--radius-sm) var(--radius-lg);
+}
+
+/* Last item: small radius on left, large on right */
+.segmented-control-item.position-last,
+.segmented-control-item.position-last .sc-item-inner {
+  border-radius: var(--radius-sm) var(--radius-lg) var(--radius-lg) var(--radius-sm);
+}
+
+/* Middle items: small radius all around */
+.segmented-control-item.position-middle,
+.segmented-control-item.position-middle .sc-item-inner {
+  border-radius: var(--radius-sm);
+}
+
+/* When only 2 items: first is left, last is right — handled by position classes */
+/* When only 1 item (edge case): gets position-first + position-last? Use full rounding */
+
+/* ─── Active item: flush (no bottom padding), no shadow ─── */
+/* Lower z-index so neighbors' shadows render on top */
+.segmented-control-item.active {
+  padding: 0;
+  box-shadow: none;
+  z-index: 0;
+}
+
+/* ─── Shadow clip: prevent shadow bleeding between adjacent inactive items ─── */
+/* clip-path clips both content and box-shadow. Negative insets open the side.
+   -1px on clipped sides lets shadow extend just enough to fill the 1px gap
+   between items (gap: --spacing-025). 100px accommodates max shadow extent. */
+.segmented-control-item.clip-right {
+  clip-path: inset(-100px -1px -100px -100px);
+}
+.segmented-control-item.clip-left {
+  clip-path: inset(-100px -100px -100px -1px);
+}
+.segmented-control-item.clip-both {
+  clip-path: inset(-100px -1px -100px -1px);
+}
+
+/* ─── Gap bridge: fade the 1px gap between adjacent inactive items to transparent ─── */
+/* Each gap has a right-side item with clip-left or clip-both. Its ::before
+   covers the 1px gap, fading from transparent (left edge) to surface-below (item edge). */
+.segmented-control-item.clip-left::before,
+.segmented-control-item.clip-both::before {
+  content: '';
+  position: absolute;
+  left: -1px;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: linear-gradient(to right, transparent, var(--surface-below));
+  pointer-events: none;
+}
+
+/* ─── Hover: inactive items rise more (6px bottom padding) ─── */
+.segmented-control-item:not(.active):not(:disabled):hover {
+  padding-bottom: var(--spacing-150); /* 6px */
+}
+
+/* ─── Pressing active: inactive items show hover state ─── */
+.segmented-control.pressing-active .segmented-control-item:not(.active):not(:disabled) {
+  padding-bottom: var(--spacing-150); /* 6px — same as hover */
+}
+
+/* ─── Press state: flush like active, preserves surface-below emboss ─── */
+.segmented-control-item:not(.active):active:not(:disabled) {
+  padding: 0;
+  box-shadow: none;
+  z-index: 0;
+}
+
+/* ─── Pressed offset: 1px down on the button itself for tactile feedback ─── */
+.segmented-control-item:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+/* ═══════════════════════════════════════════════
+   Item inner: Content surface (same tokens as Button inner)
+   ═══════════════════════════════════════════════ */
+
+.sc-item-inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1 0 0;
+  gap: var(--spacing-200); /* 8px */
+  padding: var(--spacing-150) var(--spacing-300); /* 6px 12px */
+  background: var(--surface-ground);
+  position: relative;
+  min-height: 16px; /* matches Button/Select */
+  min-width: 1px;
+}
+
+/* Inner shadow overlay (via pseudo-element) — same as Button inner::after */
+.sc-item-inner::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0px 1px 0px 0px var(--inner-top-light);
+  pointer-events: none;
+}
+
+/* ═══════════════════════════════════════════════
+   Active dot: 4px circle, accent when active
+   ═══════════════════════════════════════════════ */
+
+.sc-active-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--surface-below);
+  transition: background 150ms cubic-bezier(0.25, 1, 0.45, 1);
+}
+
+.segmented-control-item.active .sc-active-dot {
+  background: var(--accent);
+}
+
+/* ═══════════════════════════════════════════════
+   Label
+   ═══════════════════════════════════════════════ */
+
+.segmented-control-label {
+  color: var(--content-primary);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 16px;
+  text-shadow: 0px 1px 0px var(--outer-bottom-light);
+  white-space: nowrap;
+}
+
+/* ═══════════════════════════════════════════════
+   Icon
+   ═══════════════════════════════════════════════ */
+
+.segmented-control-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  color: var(--content-primary);
+  filter: drop-shadow(0px 1px 0px var(--outer-bottom-light));
+}
+
+/* Color preview dot: no drop-shadow, full opacity always */
+.segmented-control-icon:has(.color-preview-dot) {
+  filter: none;
+  opacity: 1;
+}
+
+.segmented-control-icon svg,
+.segmented-control-icon img {
+  width: 16px;
+  height: 16px;
+  display: block;
+}
+
+/* Pressed inactive items keep text-shadow and icon drop-shadow (per Figma spec) */
+
+/* ═══════════════════════════════════════════════
+   Focus state for accessibility
+   ═══════════════════════════════════════════════ */
+
+.segmented-control-item:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+  z-index: 1;
+}
+
+/* ═══════════════════════════════════════════════
+   Disabled individual item
+   ═══════════════════════════════════════════════ */
+
+.segmented-control-item:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}

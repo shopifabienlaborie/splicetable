@@ -1,0 +1,2 @@
+0000000000000000000000000000000000000000 8f8e1e411b34d0d40d4ac600e46528c92bc5e1ad Fabien Laborie <fabienlaborie@Fabiens-MacBook-Pro.local> 1772862047 -0500	branch: Created from HEAD
+8f8e1e411b34d0d40d4ac600e46528c92bc5e1ad 535fbb5f3e9dd714522f1ce8bc7862f23a30a0f2 Fabien Laborie <fabienlaborie@Fabiens-MacBook-Pro.local> 1772937662 -0500	commit: Eliminate toDataURL bottleneck and overhaul interaction performance

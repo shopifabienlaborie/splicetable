@@ -1,0 +1,1356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Splicetable - Image Grid Splitter</title>
+    <link rel="stylesheet" href="style.css?v=9">
+    <link rel="stylesheet" href="lib/osmosis-ds.css">
+    <script src="https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="lib/osmosis-ds.umd.js"></script>
+    <script>
+        var OsmosisDS = window.OsmosisDS;
+        window.Button = OsmosisDS.Button;
+        window.Control = OsmosisDS.Control;
+        window.Divider = OsmosisDS.Divider;
+        window.ImageReplacer = OsmosisDS.ImageReplacer;
+        window.Knob = OsmosisDS.Knob;
+        window.Navbar = OsmosisDS.Navbar;
+        window.SectionTitle = OsmosisDS.SectionTitle;
+        window.SegmentedControl = OsmosisDS.SegmentedControl;
+        window.Select = OsmosisDS.Select;
+        window.Slider = OsmosisDS.Slider;
+        window.TextField = OsmosisDS.TextField;
+    </script>
+</head>
+<body>
+    <!-- Navbar with React components -->
+    <div id="navbar-root"></div>
+    
+        <!-- Sidebar wrapper -->
+    <div class="sidebar-wrapper">
+        <div class="sidebar">
+          <div class="sidebar-panels" id="sidebarPanels">
+            <!-- Panel 1: Main controls -->
+            <div class="sidebar-panel panel-1">
+                <!-- Section 1: Canvas (Background) -->
+                <div class="sidebar-section section-canvas" id="contentControls">
+                    <div id="sectionTitle-canvas-root"></div>
+                    <div class="section-content">
+                        <!-- Control: Background — wraps ratio + bg type row + color/image content -->
+                        <div id="backgroundControl-root"></div>
+                    </div>
+                </div>
+
+                <!-- Divider -->
+                <div id="divider1-root"></div>
+
+                <!-- Section 2: Global (Material + Splicer + Knobs) -->
+                <div class="sidebar-section section-global" id="globalControls">
+                    <div id="sectionTitle-global-root"></div>
+                    <div class="section-content section-content-wide">
+                        <!-- Control: Splicer -->
+                        <div id="splicerControl-root"></div>
+
+                        <!-- Control: Material -->
+                        <div id="materialControl-root"></div>
+
+                        <!-- Knobs grid: Scale, Size, Spread, Tumble -->
+                        <div id="globalKnobsGrid" class="knobs-grid cols-2">
+                            <div id="canvasScale-root"></div>
+                            <div id="sizeGroup"><div id="cellSize-root"></div></div>
+                            <div id="spreadGroup"><div id="cellSpread-root"></div></div>
+                            <div id="tumbleGroup"><div id="cellTumble-root"></div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Divider -->
+                <div id="divider2-root"></div>
+
+                <!-- Section 3: Cells -->
+                <div class="sidebar-section section-cells" id="cellControls">
+                    <div id="sectionTitle-cells-root"></div>
+                    <div class="section-content section-content-wide">
+                        <!-- Control: Cell (Fill/Fit) - only for Image content -->
+                        <div id="cellFitGroup" style="display: none;">
+                            <div id="cellControl-root"></div>
+                        </div>
+
+                        <!-- Knobs grid: Count, Radius, Chaos -->
+                        <div id="cellsKnobsGrid" class="knobs-grid cols-2">
+                            <div id="cellCount-root"></div>
+                            <div id="radiusGroup"><div id="cellRadius-root"></div></div>
+                            <div id="chaosGroup" style="display: none;"><div id="chaos-root"></div></div>
+                        </div>
+
+                        <!-- Dimensions W/H/Lock - only for Scatter layout -->
+                        <div id="dimensionsGroup" style="display: none;">
+                            <div class="knobs-grid dimensions-grid">
+                                <div id="cellWidth-root"></div>
+                                <div id="lockAspectBtn-root" class="lock-btn-container"></div>
+                                <div id="cellHeight-root"></div>
+                            </div>
+                            <p class="hint-text" id="scatterHint">Select one to edit individually</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Divider -->
+                <div id="divider3-root"></div>
+
+                <!-- Section 4: Export -->
+                <div class="sidebar-section section-export" id="exportControls">
+                    <div id="sectionTitle-export-root"></div>
+                    <div class="section-content">
+                        <div class="export-row">
+                            <div class="export-scale-select" id="exportScale-root"></div>
+                            <div id="exportBtn-root"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Panel 2: Cell detail -->
+            <div class="sidebar-panel panel-2">
+                <div class="sidebar-section">
+                    <div id="cellDetail-sectionTitle-root"></div>
+                    <div class="section-content section-content-wide">
+                        <div class="knobs-grid dimensions-grid">
+                            <div id="cellDetail-width-root"></div>
+                            <div id="cellDetail-lock-root" class="lock-btn-container"></div>
+                            <div id="cellDetail-height-root"></div>
+                        </div>
+                        <div id="cellDetail-visibility-root"></div>
+                        <div id="cellDetail-resetOverride-root"></div>
+                    </div>
+                </div>
+            </div>
+          </div>
+        </div>
+    </div>
+
+    <div id="gridContainer" class="grid-container">
+        <!-- Hidden test hook: toggles crosshair visibility for automation testing -->
+        <button id="testToggleCrosshairs"
+                aria-label="Toggle Crosshairs"
+                style="position:fixed;top:0;left:50%;width:20px;height:20px;z-index:99999;opacity:0.01;cursor:default;border:0;padding:0;background:transparent;"
+                onclick="document.getElementById('gridContainer').classList.toggle('show-crosshairs');">
+        </button>
+        <div class="home-screen" id="homeScreen">
+            <p class="home-title">SPLICETABLE</p>
+            
+            <div class="home-center">
+                <div id="upload-button-root"></div>
+                <p class="home-subtitle">Or pick a floating starter</p>
+            </div>
+            
+            <p class="home-footer">Created by Fabien Laborie</p>
+
+            <!-- Hidden test hook: loads example image (accessible for automation) -->
+            <button id="testLoadExample"
+                    aria-label="Load Example Image"
+                    style="position:fixed;top:0;right:0;width:20px;height:20px;z-index:99999;opacity:0.01;cursor:default;border:0;padding:0;background:transparent;"
+                    onclick="if(window.appInstance){window.appInstance.loadExampleImage({target:{dataset:{image:'Examples/deer.jpg'}}});}">
+            </button>
+
+            <!-- Floating images container -->
+            <div class="floating-images-container">
+                <div class="floating-image" data-image="Examples/deer.jpg" style="left: 50px; top: 40px; width: 178px; height: 240px;">
+                    <img src="Examples/thumbs/deer.jpg" alt="Deer">
+                </div>
+                <div class="floating-image" data-image="Examples/fashionportrait.jpg" style="left: -60px; top: 400px; width: 192px; height: 240px;">
+                    <img src="Examples/thumbs/fashionportrait.jpg" alt="Fashion portrait">
+                </div>
+                <div class="floating-image" data-image="Examples/pointillism.jpg" style="left: 180px; top: 640px; width: 200px; height: 200px;">
+                    <img src="Examples/thumbs/pointillism.jpg" alt="Pointillism">
+                </div>
+                <div class="floating-image" data-image="Examples/plastictoycar.png" style="left: 400px; top: -30px; width: 200px; height: 200px;">
+                    <img src="Examples/thumbs/plastictoycar.jpg" alt="Plastic toy car">
+                </div>
+                <div class="floating-image" data-image="Examples/van.png" style="left: 520px; top: 680px; width: 180px; height: 180px;">
+                    <img src="Examples/thumbs/van.jpg" alt="Van">
+                </div>
+                <div class="floating-image" data-image="Examples/skull.jpg" style="left: 870px; top: -40px; width: 200px; height: 200px;">
+                    <img src="Examples/thumbs/skull.jpg" alt="Skull">
+                </div>
+                <div class="floating-image" data-image="Examples/doggo.jpeg" style="left: 1050px; top: 480px; width: 240px; height: 161px;">
+                    <img src="Examples/thumbs/doggo.jpg" alt="Dog">
+                </div>
+                <div class="floating-image" data-image="Examples/plasticportrait.jpg" style="left: 1220px; top: 80px; width: 156px; height: 240px;">
+                    <img src="Examples/thumbs/plasticportrait.jpg" alt="Plastic portrait">
+                </div>
+                <div class="floating-image" data-image="Examples/radiantportrait.jpg" style="left: 1200px; top: 620px; width: 156px; height: 240px;">
+                    <img src="Examples/thumbs/radiantportrait.jpg" alt="Radiant portrait">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden file input for image upload -->
+    <input type="file" id="imageUpload" accept="image/*" style="display: none;">
+
+    <!-- Initialize Navbar and Sidebar Components -->
+    <script type="text/babel">
+        // Icon components - using img tags to reference Icons folder
+        const DiceIcon = () => (
+            <img src="Icons/dice.svg" alt="" width="16" height="16" style={{display: 'block'}} />
+        );
+        
+        const ResetIcon = () => (
+            <img src="Icons/reset.svg" alt="" width="16" height="16" style={{display: 'block'}} />
+        );
+        
+        const ExportIcon = () => (
+            <img src="Icons/export.svg" alt="" width="16" height="16" style={{display: 'block'}} />
+        );
+        
+        // Canvas ratio icons
+        const ImgIcon = () => (
+            <img src="Icons/img.svg" alt="" width="16" height="16" style={{display: 'block'}} />
+        );
+
+        const FrameIcon = () => (
+            <img src="Icons/frame.svg" alt="" width="16" height="16" style={{display: 'block'}} />
+        );
+        
+        const SquareIcon = () => (
+            <img src="Icons/square.svg" alt="" width="16" height="16" style={{display: 'block'}} />
+        );
+        
+        const Ratio16_9Icon = () => (
+            <img src="Icons/16_9.svg" alt="" width="16" height="16" style={{display: 'block'}} />
+        );
+        
+        const Ratio9_16Icon = () => (
+            <img src="Icons/9_16.svg" alt="" width="16" height="16" style={{display: 'block'}} />
+        );
+        
+        const Ratio4_3Icon = () => (
+            <img src="Icons/4_3.svg" alt="" width="16" height="16" style={{display: 'block'}} />
+        );
+        
+        const Ratio3_4Icon = () => (
+            <img src="Icons/3_4.svg" alt="" width="16" height="16" style={{display: 'block'}} />
+        );
+        
+        const TransparentBgIcon = () => (
+            <img src="Icons/transparentbg.svg" alt="" width="16" height="16" style={{display: 'block'}} />
+        );
+        
+        const CircleIcon = () => (
+            <img src="Icons/circle.svg" alt="" width="16" height="16" style={{display: 'block'}} />
+        );
+
+        const ColorPreviewDot = ({ color }) => (
+            <span className="color-preview-dot" style={{
+                display: 'block',
+                width: 16,
+                height: 16,
+                borderRadius: '50%',
+                background: color || '#ffffff',
+                boxShadow: 'inset 0 0 0 1px rgba(0,0,0,0.15)',
+                flexShrink: 0,
+            }} />
+        );
+        
+        const LockLockedIcon = () => (
+            <img src="Icons/lock-locked.svg" alt="" width="16" height="16" style={{display: 'block'}} />
+        );
+        
+        const LockUnlockedIcon = () => (
+            <img src="Icons/lock-unlocked.svg" alt="" width="16" height="16" style={{display: 'block'}} />
+        );
+        
+        // Store React roots globally for updates
+        window.sidebarRoots = {};
+        
+        // Color swatch icon for hex TextField — clicking opens native color picker
+        const ColorSwatchIcon = ({ color, onColorChange }) => {
+            const inputRef = React.useRef(null);
+            return (
+                <div style={{ position: 'relative', width: 16, height: 16, flexShrink: 0 }}>
+                    <div
+                        onClick={() => inputRef.current && inputRef.current.click()}
+                        style={{
+                            width: 16, height: 16, borderRadius: 'var(--radius-sm)',
+                            background: color || '#ffffff',
+                            border: '1px solid var(--border-default)',
+                            cursor: 'pointer'
+                        }}
+                    />
+                    <input
+                        ref={inputRef}
+                        type="color"
+                        value={color || '#ffffff'}
+                        onChange={(e) => onColorChange && onColorChange(e.target.value)}
+                        style={{
+                            position: 'absolute',
+                            top: 0, left: 0,
+                            width: 16, height: 16,
+                            opacity: 0,
+                            cursor: 'pointer',
+                            padding: 0, border: 'none'
+                        }}
+                    />
+                </div>
+            );
+        };
+
+        // Suggested color swatches extracted from the image
+        const ColorSwatches = ({ colors, selectedColor, onSelectColor }) => {
+            if (!colors || colors.length === 0) return null;
+            return (
+                <div className="color-swatches-container">
+                    {colors.slice(0, 8).map((color, index) => {
+                        const hexColor = window.app ? window.app.rgbToHex(color) : color;
+                        const isSelected = selectedColor && selectedColor.toLowerCase() === hexColor.toLowerCase();
+                        return (
+                            <div
+                                key={index}
+                                className={`color-swatch-item${isSelected ? ' selected' : ''}`}
+                                style={{ backgroundColor: color }}
+                                title={hexColor}
+                                onClick={() => onSelectColor && onSelectColor(hexColor)}
+                            />
+                        );
+                    })}
+                </div>
+            );
+        };
+
+        // Function to update all sidebar components
+        window.updateSidebarRoot = function(app, ...keys) {
+            if (!app || !keys.length) return;
+            window.updateSidebarComponents(app, new Set(keys));
+        };
+
+        window.updateSidebarComponents = function(app, dirtyRoots) {
+            if (!app) return;
+            
+            const renderAll = !dirtyRoots;
+            const should = (key) => renderAll || dirtyRoots.has(key);
+            
+            // Determine current mode states
+            const isGrid = app.layoutMode === 'grid';
+            const isScatter = app.layoutMode === 'scatter';
+            const isImage = app.contentMode === 'image';
+            const isColor = app.contentMode === 'color';
+            const bgIsColor = app.canvasBackground === 'color';
+            const bgIsImage = app.canvasBackground === 'image';
+            
+            // ─── Visibility toggles (only on full refresh) ────────
+            if (renderAll) {
+                const cellFitGroup = document.getElementById('cellFitGroup');
+                const radiusGroup = document.getElementById('radiusGroup');
+                const tumbleGroup = document.getElementById('tumbleGroup');
+                const dimensionsGroup = document.getElementById('dimensionsGroup');
+                const chaosGroup = document.getElementById('chaosGroup');
+                const sizeGroup = document.getElementById('sizeGroup');
+                const spreadGroup = document.getElementById('spreadGroup');
+                
+                if (cellFitGroup) cellFitGroup.style.display = isImage ? '' : 'none';
+                if (radiusGroup) radiusGroup.style.display = '';
+                if (tumbleGroup) tumbleGroup.style.display = '';
+                if (dimensionsGroup) dimensionsGroup.style.display = isScatter ? '' : 'none';
+                if (chaosGroup) chaosGroup.style.display = isScatter ? '' : 'none';
+                if (sizeGroup) sizeGroup.style.display = isScatter ? 'none' : '';
+                if (spreadGroup) spreadGroup.style.display = '';
+                
+                const globalKnobsGrid = document.getElementById('globalKnobsGrid');
+                if (globalKnobsGrid) {
+                    if (isScatter) {
+                        globalKnobsGrid.classList.remove('cols-2');
+                        globalKnobsGrid.classList.add('cols-3');
+                    } else {
+                        globalKnobsGrid.classList.remove('cols-3');
+                        globalKnobsGrid.classList.add('cols-2');
+                    }
+                }
+                
+                const cellsKnobsGrid = document.getElementById('cellsKnobsGrid');
+                if (cellsKnobsGrid) {
+                    if (isScatter) {
+                        cellsKnobsGrid.classList.remove('cols-2');
+                        cellsKnobsGrid.classList.add('cols-3');
+                    } else {
+                        cellsKnobsGrid.classList.remove('cols-3');
+                        cellsKnobsGrid.classList.add('cols-2');
+                    }
+                }
+            }
+            
+            // ─── Canvas Section: Background Control ──────────────
+            if (should('backgroundControl') && window.sidebarRoots.backgroundControl) {
+                window.sidebarRoots.backgroundControl.render(
+                    <Control label="Background">
+                        <div style={{display: 'flex', flexDirection: 'column', gap: 'var(--spacing-200)', width: '100%'}}>
+                            {/* Row: Ratio Select + Background type SegmentedControl */}
+                            <div className="section-row">
+                                <div id="canvasRatio-inline">
+                                    <Select
+                                        value={app.canvasRatio}
+                                        icon={<FrameIcon />}
+                                        iconDynamic={true}
+                                        fullWidth={true}
+                                        onChange={(value) => {
+                                            app.canvasRatio = value;
+                                            app.handleCanvasRatioChange({ target: { value } });
+                                            window.updateSidebarRoot(app, 'backgroundControl');
+                                        }}
+                                        options={[
+                                            { value: 'original', label: 'Original', icon: <FrameIcon /> },
+                                            { value: '1:1', label: '1:1 (Square)', displayLabel: '1:1', icon: <SquareIcon /> },
+                                            { value: '4:5', label: '4:5 (Portrait)', displayLabel: '4:5', icon: <Ratio3_4Icon /> },
+                                            { value: '16:9', label: '16:9 (Landscape)', displayLabel: '16:9', icon: <Ratio16_9Icon /> },
+                                            { value: '9:16', label: '9:16 (Portrait)', displayLabel: '9:16', icon: <Ratio9_16Icon /> },
+                                            { value: '4:3', label: '4:3 (Landscape)', displayLabel: '4:3', icon: <Ratio4_3Icon /> },
+                                            { value: '3:4', label: '3:4 (Portrait)', displayLabel: '3:4', icon: <Ratio3_4Icon /> }
+                                        ]}
+                                    />
+                                </div>
+                                <SegmentedControl
+                                    value={app.canvasBackground}
+                                    showDot={false}
+                                    onChange={(value) => {
+                                        app.canvasBackground = value;
+                                        app.handleCanvasBackgroundChange({ target: { value } });
+                                        window.updateSidebarRoot(app, 'backgroundControl');
+                                    }}
+                                    items={[
+                                        { value: 'transparent', label: '', iconBefore: <TransparentBgIcon /> },
+                                        { value: 'color', label: '', iconBefore: <ColorPreviewDot color={app.canvasColor} /> },
+                                        { value: 'image', label: '', iconBefore: <ImgIcon /> }
+                                    ]}
+                                />
+                            </div>
+                            
+                            {/* Background "color" panel — always rendered, animated via CSS */}
+                            <div className={`sidebar-reveal ${bgIsColor ? 'active' : ''}`} aria-hidden={!bgIsColor}>
+                                <div className="sidebar-reveal-inner">
+                                    <TextField
+                                        value={app.canvasColor || '#ffffff'}
+                                        iconBefore={
+                                            <ColorSwatchIcon
+                                                color={app.canvasColor}
+                                                onColorChange={(value) => {
+                                                    app.canvasColor = value;
+                                                    if (app.image) app.renderContent();
+                                                    window.updateSidebarRoot(app, 'backgroundControl');
+                                                }}
+                                            />
+                                        }
+                                        onChange={(value) => {
+                                            if (/^#[0-9A-Fa-f]{6}$/.test(value) || /^#[0-9A-Fa-f]{3}$/.test(value)) {
+                                                app.canvasColor = value;
+                                                if (app.image) app.renderContent();
+                                                window.updateSidebarRoot(app, 'backgroundControl');
+                                            }
+                                        }}
+                                        onBlur={(e) => {
+                                            let v = e.target.value.trim();
+                                            if (!v.startsWith('#')) v = '#' + v;
+                                            if (/^#[0-9A-Fa-f]{6}$/.test(v) || /^#[0-9A-Fa-f]{3}$/.test(v)) {
+                                                app.canvasColor = v;
+                                                if (app.image) app.renderContent();
+                                                window.updateSidebarRoot(app, 'backgroundControl');
+                                            }
+                                        }}
+                                        placeholder="#ffffff"
+                                    />
+                                    <ColorSwatches
+                                        colors={app.extractedColors || []}
+                                        selectedColor={app.canvasColor}
+                                        onSelectColor={(hexColor) => {
+                                            app.canvasColor = hexColor;
+                                            if (app.image) app.renderContent();
+                                            window.updateSidebarRoot(app, 'backgroundControl');
+                                        }}
+                                    />
+                                </div>
+                            </div>
+                            
+                            {/* Background "image" panel — always rendered, animated via CSS */}
+                            <div className={`sidebar-reveal ${bgIsImage ? 'active' : ''}`} aria-hidden={!bgIsImage}>
+                                <div className="sidebar-reveal-inner">
+                                    <ImageReplacer
+                                        className="always-hover"
+                                        imageSrc={app.backgroundImage ? (app.backgroundImage.src || app.imageDataURL) : (app.imageDataURL || '')}
+                                        fileName={app.backgroundImageName || (app.image ? 'Original image' : 'No image')}
+                                        onImageChange={(file, previewUrl) => {
+                                            const img = new Image();
+                                            img.onload = () => {
+                                                app.backgroundImage = img;
+                                                app.backgroundImageName = file.name;
+                                                if (app.image) app.renderContent();
+                                                window.updateSidebarRoot(app, 'backgroundControl');
+                                            };
+                                            img.src = previewUrl;
+                                        }}
+                                        onReset={() => {
+                                            app.backgroundImage = app.image;
+                                            app.backgroundImageName = null;
+                                            if (app.image) app.renderContent();
+                                            window.updateSidebarRoot(app, 'backgroundControl');
+                                        }}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </Control>
+                );
+            }
+            
+            // ─── Global Section: Material Control ────────────────
+            if (should('materialControl') && window.sidebarRoots.materialControl) {
+                window.sidebarRoots.materialControl.render(
+                    <Control label="Material">
+                        <SegmentedControl
+                            items={[
+                                { value: 'image', label: 'Image' },
+                                { value: 'color', label: 'Color' }
+                            ]}
+                            value={app.contentMode}
+                            fullWidth={true}
+                            onChange={(value) => {
+                                app.contentMode = value;
+                                app.handleUnifiedModeChange();
+                                window.updateSidebarComponents(app);
+                            }}
+                        />
+                    </Control>
+                );
+            }
+            
+            // ─── Global Section: Splicer Control ─────────────────
+            if (should('splicerControl') && window.sidebarRoots.splicerControl) {
+                window.sidebarRoots.splicerControl.render(
+                    <Control label="Splicer">
+                        <SegmentedControl
+                            items={[
+                                { value: 'grid', label: 'Stretch' },
+                                { value: 'scatter', label: 'Scatter' }
+                            ]}
+                            value={app.layoutMode}
+                            fullWidth={true}
+                            onChange={(value) => {
+                                app.layoutMode = value;
+                                app.handleUnifiedModeChange();
+                                window.updateSidebarComponents(app);
+                            }}
+                        />
+                    </Control>
+                );
+            }
+            
+            // ─── Global Section: Knobs ───────────────────────────
+            // Canvas Scale Knob
+            if (should('canvasScale') && window.sidebarRoots.canvasScale) {
+                window.sidebarRoots.canvasScale.render(
+                    <Knob
+                        label="Scale"
+                        min={0}
+                        max={400}
+                        step={5}
+                        value={app.canvasScale}
+                        defaultValue={100}
+                        showPercentage={true}
+                        onChange={(value) => {
+                            app.canvasScale = value;
+                            app.updateLayoutStyles();
+                            app.scheduleSidebarUpdate('canvasScale');
+                        }}
+                    />
+                );
+            }
+            
+            // Cell Size Knob (unified) — hidden in Scatter
+            if (should('cellSize') && window.sidebarRoots.cellSize) {
+                window.sidebarRoots.cellSize.render(
+                    <Knob
+                        label="Size"
+                        min={0}
+                        max={200}
+                        step={1}
+                        value={app.cellSize + 100}
+                        defaultValue={100}
+                        showPercentage={true}
+                        onChange={(value) => {
+                            app.cellSize = value - 100;
+                            app.updateLayoutStyles();
+                            app.scheduleSidebarUpdate('cellSize');
+                        }}
+                    />
+                );
+            }
+            
+            // Cell Spread Knob (unified)
+            if (should('cellSpread') && window.sidebarRoots.cellSpread) {
+                window.sidebarRoots.cellSpread.render(
+                    <Knob
+                        label="Spread"
+                        min={-400}
+                        max={400}
+                        step={1}
+                        defaultValue={0}
+                        value={app.cellSpread}
+                        showPercentage={true}
+                        onChange={(value) => {
+                            app.cellSpread = value;
+                            app.updateLayoutStyles();
+                            app.scheduleSidebarUpdate('cellSpread');
+                        }}
+                    />
+                );
+            }
+            
+            // Cell Tumble Knob
+            if (should('cellTumble') && window.sidebarRoots.cellTumble) {
+                window.sidebarRoots.cellTumble.render(
+                    <Knob
+                        label="Tumble"
+                        min={0}
+                        max={100}
+                        step={1}
+                        value={app.cellTumble}
+                        showPercentage={true}
+                        onChange={(value) => {
+                            app.cellTumble = value;
+                            app.generateCellRotations();
+                            app.updateLayoutStyles();
+                            app.scheduleSidebarUpdate('cellTumble');
+                        }}
+                    />
+                );
+            }
+            
+            // ─── Cells Section: Cell Control (Fill/Fit) ──────────
+            if (should('cellControl') && window.sidebarRoots.cellControl) {
+                window.sidebarRoots.cellControl.render(
+                    <Control label="Cell">
+                        <SegmentedControl
+                            items={[
+                                { value: 'fill', label: 'Fill' },
+                                { value: 'cover', label: 'Fit' }
+                            ]}
+                            value={app.imageFit}
+                            fullWidth={true}
+                            onChange={(value) => {
+                                app.imageFit = value;
+                                app.handleFitChange({ target: { dataset: { fit: value } } });
+                                window.updateSidebarRoot(app, 'cellControl');
+                            }}
+                        />
+                    </Control>
+                );
+            }
+            
+            // ─── Cells Section: Knobs ────────────────────────────
+            // Cell Count Knob
+            const cellCountMax = 256;
+            if (should('cellCount') && window.sidebarRoots.cellCount) {
+                window.sidebarRoots.cellCount.render(
+                    <Knob
+                        label="Count"
+                        className="loadable"
+                        min={4}
+                        max={cellCountMax}
+                        step={4}
+                        value={Math.min(app.cellCount, cellCountMax)}
+                        loading={!!app._countKnobLoading}
+                        onChange={(value) => {
+                            app.cellCount = value;
+                            app.handleCellCountChange({ target: { value } });
+                            app.scheduleSidebarUpdate('cellCount');
+                        }}
+                    />
+                );
+            }
+            
+            // Cell Radius Knob
+            if (should('cellRadius') && window.sidebarRoots.cellRadius) {
+                window.sidebarRoots.cellRadius.render(
+                    <Knob
+                        label="Radius"
+                        min={0}
+                        max={100}
+                        step={1}
+                        value={app.cellBorderRadius}
+                        showPercentage={true}
+                        onChange={(value) => {
+                            app.cellBorderRadius = value;
+                            app.updateLayoutStyles();
+                            app.scheduleSidebarUpdate('cellRadius');
+                        }}
+                    />
+                );
+            }
+            
+            // Chaos Knob (Scatter only)
+            if (should('chaos') && window.sidebarRoots.chaos) {
+                window.sidebarRoots.chaos.render(
+                    <Knob
+                        label="Chaos"
+                        min={0}
+                        max={100}
+                        step={1}
+                        value={app.chaosLevel}
+                        showPercentage={true}
+                        onChange={(value) => {
+                            app.chaosLevel = value;
+                            app.initializeFreestyleCells();
+                            app.scheduleRender();
+                            app.scheduleSidebarUpdate('chaos');
+                        }}
+                    />
+                );
+            }
+            
+            // Cell Width Knob (Scatter only)
+            if (should('cellWidth') && window.sidebarRoots.cellWidth) {
+                window.sidebarRoots.cellWidth.render(
+                    <Knob
+                        label="Width"
+                        min={10}
+                        max={500}
+                        step={1}
+                        value={app.cellWidthValue || 100}
+                        onChange={(value) => {
+                            app.handleCellWidthSliderChange(value);
+                            app.scheduleSidebarUpdate('cellWidth');
+                        }}
+                    />
+                );
+            }
+            
+            // Cell Height Knob (Scatter only)
+            if (should('cellHeight') && window.sidebarRoots.cellHeight) {
+                window.sidebarRoots.cellHeight.render(
+                    <Knob
+                        label="Height"
+                        min={10}
+                        max={500}
+                        step={1}
+                        value={app.cellHeightValue || 100}
+                        onChange={(value) => {
+                            app.handleCellHeightSliderChange(value);
+                            app.scheduleSidebarUpdate('cellHeight');
+                        }}
+                    />
+                );
+            }
+            
+            // Lock Aspect Ratio Button (Scatter only) with active dot
+            if (should('lockAspectBtn') && window.sidebarRoots.lockAspectBtn) {
+                window.sidebarRoots.lockAspectBtn.render(
+                    <React.Fragment>
+                        <Button
+                            variant="outline"
+                            iconBefore={app.aspectRatioLocked ? <LockLockedIcon /> : <LockUnlockedIcon />}
+                            label=""
+                            className="lock-aspect-button"
+                            onClick={() => {
+                                app.toggleAspectLock();
+                                window.updateSidebarRoot(app, 'lockAspectBtn');
+                            }}
+                        />
+                        <span className={`lock-active-dot ${app.aspectRatioLocked ? 'engaged' : ''}`} />
+                    </React.Fragment>
+                );
+            }
+            
+            // ─── Export Section ───────────────────────────────────
+            // Export Scale Select
+            if (should('exportScale') && window.sidebarRoots.exportScale) {
+                window.sidebarRoots.exportScale.render(
+                    <Select
+                        value={String(app.exportScale || 1)}
+                        onChange={(value) => {
+                            app.exportScale = parseFloat(value);
+                            window.updateSidebarRoot(app, 'exportScale');
+                        }}
+                        options={[
+                            { value: '1', label: '1x' },
+                            { value: '1.5', label: '1.5x' },
+                            { value: '2', label: '2x' },
+                            { value: '4', label: '4x' }
+                        ]}
+                    />
+                );
+            }
+            
+            // Export Button
+            if (should('exportBtn') && window.sidebarRoots.exportBtn) {
+                window.sidebarRoots.exportBtn.render(
+                    <Button
+                        variant="outline"
+                        label="Export PNG"
+                        iconBefore={<ExportIcon />}
+                        onClick={() => app.exportArtwork()}
+                        fullWidth={true}
+                    />
+                );
+            }
+            
+            // ─── Cell Detail Panel (Panel 2) ──────────────────────
+            if (should('cellDetail') && app.selectedCellIndex !== null) {
+                const cellIdx = app.selectedCellIndex;
+                const cellLabel = `Cell ${cellIdx + 1}`;
+                
+                // Section title with back navigation
+                if (window.sidebarRoots.cellDetailTitle) {
+                    window.sidebarRoots.cellDetailTitle.render(
+                        <SectionTitle
+                            label={cellLabel}
+                            level={2}
+                            onClick={() => app.deselectCell()}
+                        />
+                    );
+                }
+                
+                // Lock aspect ratio button (shared by both modes)
+                if (window.sidebarRoots.cellDetailLock) {
+                    window.sidebarRoots.cellDetailLock.render(
+                        <React.Fragment>
+                            <Button
+                                variant="outline"
+                                iconBefore={app.cellDetailAspectLocked ? <LockLockedIcon /> : <LockUnlockedIcon />}
+                                label=""
+                                className="lock-aspect-button"
+                                onClick={() => {
+                                    app.cellDetailAspectLocked = !app.cellDetailAspectLocked;
+                                    if (app.cellDetailAspectLocked) {
+                                        if (isGrid) {
+                                            const _col = cellIdx % app.gridSize;
+                                            const _row = Math.floor(cellIdx / app.gridSize);
+                                            const _tw = app.columnWidths.reduce((a, b) => a + b, 0);
+                                            const _th = app.rowHeights.reduce((a, b) => a + b, 0);
+                                            const _wp = (app.columnWidths[_col] / _tw) * 100;
+                                            const _hp = (app.rowHeights[_row] / _th) * 100;
+                                            app.cellDetailLastAspectRatio = _wp / _hp;
+                                        } else {
+                                            const _cd = app.freestyleCells[cellIdx];
+                                            if (_cd) app.cellDetailLastAspectRatio = _cd.width / _cd.height;
+                                        }
+                                    }
+                                    window.updateSidebarRoot(app, 'cellDetail');
+                                }}
+                            />
+                            <span className={`lock-active-dot ${app.cellDetailAspectLocked ? 'engaged' : ''}`} />
+                        </React.Fragment>
+                    );
+                }
+                
+                if (isGrid) {
+                    // ── Stretch mode: Width / Height bound to column/row weights ──
+                    const col = cellIdx % app.gridSize;
+                    const row = Math.floor(cellIdx / app.gridSize);
+                    
+                    const totalColWeight = app.columnWidths.reduce((a, b) => a + b, 0);
+                    const totalRowWeight = app.rowHeights.reduce((a, b) => a + b, 0);
+                    
+                    const colPercent = Math.round((app.columnWidths[col] / totalColWeight) * 100);
+                    const rowPercent = Math.round((app.rowHeights[row] / totalRowWeight) * 100);
+                    
+                    // Show / Hide toggle (Stretch mode only)
+                    const isCellHidden = app.hiddenCells.has(cellIdx);
+                    if (window.sidebarRoots.cellDetailVisibility) {
+                        window.sidebarRoots.cellDetailVisibility.render(
+                            <SegmentedControl
+                                fullWidth={true}
+                                value={isCellHidden ? 'hide' : 'show'}
+                                onChange={(value) => {
+                                    if (value === 'hide') {
+                                        app.hiddenCells.add(cellIdx);
+                                    } else {
+                                        app.hiddenCells.delete(cellIdx);
+                                    }
+                                    app.scheduleRender();
+                                    app.scheduleSidebarUpdate('cellDetail');
+                                }}
+                                items={[
+                                    { value: 'show', label: 'Show' },
+                                    { value: 'hide', label: 'Hide' }
+                                ]}
+                            />
+                        );
+                    }
+                    
+                    if (window.sidebarRoots.cellDetailWidth) {
+                        window.sidebarRoots.cellDetailWidth.render(
+                            <Knob
+                                label="Width"
+                                min={5}
+                                max={95}
+                                step={1}
+                                value={colPercent}
+                                showPercentage={true}
+                                onChange={(value) => {
+                                    const otherColWeights = app.columnWidths.filter((_, i) => i !== col);
+                                    const sumOtherCol = otherColWeights.reduce((a, b) => a + b, 0);
+                                    const pct = Math.max(5, Math.min(95, value)) / 100;
+                                    app.columnWidths[col] = (pct * sumOtherCol) / (1 - pct);
+                                    
+                                    if (app.cellDetailAspectLocked && app.cellDetailLastAspectRatio) {
+                                        const newRowPct = Math.max(5, Math.min(95, value / app.cellDetailLastAspectRatio));
+                                        const otherRowWeights = app.rowHeights.filter((_, i) => i !== row);
+                                        const sumOtherRow = otherRowWeights.reduce((a, b) => a + b, 0);
+                                        const rPct = newRowPct / 100;
+                                        app.rowHeights[row] = (rPct * sumOtherRow) / (1 - rPct);
+                                    }
+                                    
+                                    app.updateLayoutStyles();
+                                    app.scheduleRender();
+                                    app.scheduleSidebarUpdate('cellDetail');
+                                }}
+                            />
+                        );
+                    }
+                    
+                    if (window.sidebarRoots.cellDetailHeight) {
+                        window.sidebarRoots.cellDetailHeight.render(
+                            <Knob
+                                label="Height"
+                                min={5}
+                                max={95}
+                                step={1}
+                                value={rowPercent}
+                                showPercentage={true}
+                                onChange={(value) => {
+                                    const otherRowWeights = app.rowHeights.filter((_, i) => i !== row);
+                                    const sumOtherRow = otherRowWeights.reduce((a, b) => a + b, 0);
+                                    const pct = Math.max(5, Math.min(95, value)) / 100;
+                                    app.rowHeights[row] = (pct * sumOtherRow) / (1 - pct);
+                                    
+                                    if (app.cellDetailAspectLocked && app.cellDetailLastAspectRatio) {
+                                        const newColPct = Math.max(5, Math.min(95, value * app.cellDetailLastAspectRatio));
+                                        const otherColWeights = app.columnWidths.filter((_, i) => i !== col);
+                                        const sumOtherCol = otherColWeights.reduce((a, b) => a + b, 0);
+                                        const cPct = newColPct / 100;
+                                        app.columnWidths[col] = (cPct * sumOtherCol) / (1 - cPct);
+                                    }
+                                    
+                                    app.updateLayoutStyles();
+                                    app.scheduleRender();
+                                    app.scheduleSidebarUpdate('cellDetail');
+                                }}
+                            />
+                        );
+                    }
+                    
+                    // Reset override button (Stretch mode)
+                    if (window.sidebarRoots.cellDetailReset) {
+                        window.sidebarRoots.cellDetailReset.render(
+                            <Button
+                                variant="outline"
+                                label="Reset override"
+                                iconBefore={<ResetIcon />}
+                                fullWidth={true}
+                                onClick={() => {
+                                    app.columnWidths[col] = 1;
+                                    app.rowHeights[row] = 1;
+                                    app.hiddenCells.delete(cellIdx);
+                                    app.scheduleRender();
+                                    app.deselectCell();
+                                }}
+                            />
+                        );
+                    }
+                } else {
+                    // ── Scatter mode: no visibility toggle ──
+                    if (window.sidebarRoots.cellDetailVisibility) {
+                        window.sidebarRoots.cellDetailVisibility.render(null);
+                    }
+                    
+                    // ── Scatter mode: Width / Height bound to individual cell dimensions ──
+                    const cellData = app.freestyleCells[cellIdx];
+                    const cellW = cellData ? Math.round(cellData.width) : 100;
+                    const cellH = cellData ? Math.round(cellData.height) : 100;
+                    
+                    if (window.sidebarRoots.cellDetailWidth) {
+                        window.sidebarRoots.cellDetailWidth.render(
+                            <Knob
+                                label="Width"
+                                min={10}
+                                max={500}
+                                step={1}
+                                value={cellW}
+                                onChange={(value) => {
+                                    if (cellData) {
+                                        app.selectedCellIndex = cellIdx;
+                                        let newH = cellData.height;
+                                        if (app.cellDetailAspectLocked && app.cellDetailLastAspectRatio) {
+                                            newH = Math.max(10, Math.min(500, Math.round(value / app.cellDetailLastAspectRatio)));
+                                        }
+                                        app.applyCellDimensions(value, newH);
+                                        app.scheduleSidebarUpdate('cellDetail');
+                                    }
+                                }}
+                            />
+                        );
+                    }
+                    
+                    if (window.sidebarRoots.cellDetailHeight) {
+                        window.sidebarRoots.cellDetailHeight.render(
+                            <Knob
+                                label="Height"
+                                min={10}
+                                max={500}
+                                step={1}
+                                value={cellH}
+                                onChange={(value) => {
+                                    if (cellData) {
+                                        app.selectedCellIndex = cellIdx;
+                                        let newW = cellData.width;
+                                        if (app.cellDetailAspectLocked && app.cellDetailLastAspectRatio) {
+                                            newW = Math.max(10, Math.min(500, Math.round(value * app.cellDetailLastAspectRatio)));
+                                        }
+                                        app.applyCellDimensions(newW, value);
+                                        app.scheduleSidebarUpdate('cellDetail');
+                                    }
+                                }}
+                            />
+                        );
+                    }
+                    
+                    // Reset override button (Scatter only)
+                    if (window.sidebarRoots.cellDetailReset) {
+                        window.sidebarRoots.cellDetailReset.render(
+                            <Button
+                                variant="outline"
+                                label="Reset override"
+                                iconBefore={<ResetIcon />}
+                                fullWidth={true}
+                                onClick={() => {
+                                    // Find default dimensions from a non-modified sibling
+                                    const sibling = app.freestyleCells.find((c, i) => i !== cellIdx && !c.individuallyModified);
+                                    if (sibling && cellData) {
+                                        app.selectedCellIndex = cellIdx;
+                                        app.applyCellDimensions(sibling.width, sibling.height);
+                                        cellData.individuallyModified = false;
+                                    }
+                                    // Navigate back
+                                    app.deselectCell();
+                                }}
+                            />
+                        );
+                    }
+                }
+            }
+        };
+        
+        // Wait for all components to be loaded
+        function waitForComponents(callback, maxAttempts = 20) {
+            let attempts = 0;
+            const check = () => {
+                attempts++;
+                const ready = window.appInstance && 
+                              window.SegmentedControl && 
+                              window.ImageReplacer && 
+                              window.Navbar &&
+                              window.Button &&
+                              window.Select &&
+                              window.Slider &&
+                              window.Knob &&
+                              window.SectionTitle &&
+                              window.Control;
+                
+                if (ready) {
+                    console.log('All components loaded after', attempts, 'attempts');
+                    callback();
+                } else if (attempts < maxAttempts) {
+                    console.log('Waiting for components... attempt', attempts);
+                    setTimeout(check, 100);
+                } else {
+                    console.error('Components failed to load:', {
+                        appInstance: !!window.appInstance,
+                        SegmentedControl: !!window.SegmentedControl,
+                        ImageReplacer: !!window.ImageReplacer,
+                        Navbar: !!window.Navbar,
+                        Button: !!window.Button,
+                        Select: !!window.Select,
+                        Slider: !!window.Slider
+                    });
+                }
+            };
+            check();
+        }
+        
+        // Initialize all components
+        waitForComponents(() => {
+            const app = window.appInstance;
+            
+            // Trigger homepage entrance animation
+            const homeScreen = document.getElementById('homeScreen');
+            if (homeScreen) {
+                // Small delay to ensure CSS is applied, then trigger animation
+                requestAnimationFrame(() => {
+                    setTimeout(() => {
+                        // Phase 1: Fade in title at center
+                        homeScreen.classList.add('animated');
+                        // Phase 2: After 1s idle, scroll everything up
+                        setTimeout(() => {
+                            homeScreen.classList.add('scrolling');
+                        }, 1000);
+                    }, 50);
+                });
+            }
+            
+            // Initialize theme state based on system preference
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            window.currentTheme = prefersDark ? 'dark' : 'light';
+            if (prefersDark) {
+                document.documentElement.classList.add('dark-mode');
+                document.documentElement.classList.remove('light-mode');
+            } else {
+                document.documentElement.classList.add('light-mode');
+                document.documentElement.classList.remove('dark-mode');
+            }
+            
+            // Store current navbar state for re-renders
+            window.navbarState = {
+                imageSrc: null,
+                fileName: "Upload image"
+            };
+            
+            // Function to update navbar with current state
+            window.updateNavbar = function(imageSrc, fileName) {
+                // Update stored state
+                if (imageSrc !== undefined) window.navbarState.imageSrc = imageSrc;
+                if (fileName !== undefined) window.navbarState.fileName = fileName;
+                
+                window.navbarRoot.render(
+                    <Navbar
+                        imageSrc={window.navbarState.imageSrc}
+                        fileName={window.navbarState.fileName}
+                        onImageChange={(file) => {
+                            const event = new Event('change', { bubbles: true });
+                            const fileInput = document.getElementById('imageUpload');
+                            const dataTransfer = new DataTransfer();
+                            dataTransfer.items.add(file);
+                            fileInput.files = dataTransfer.files;
+                            fileInput.dispatchEvent(event);
+                        }}
+                        onImageReset={() => {
+                            if (window.appInstance) {
+                                window.appInstance.handleImageReset();
+                            }
+                        }}
+                        onReset={() => {
+                            if (window.appInstance && window.appInstance.image) {
+                                window.appInstance.resetToDefaults();
+                                window.appInstance.initializeForMode();
+                                window.appInstance.renderContent();
+                                if (window.updateSidebarComponents) window.updateSidebarComponents(window.appInstance);
+                            }
+                        }}
+                        hideViewToggle={true}
+                        theme={window.currentTheme}
+                        onThemeChange={(theme) => {
+                            console.log('Theme change requested:', theme);
+                            window.currentTheme = theme;
+                            if (theme === 'dark') {
+                                document.documentElement.classList.add('dark-mode');
+                                document.documentElement.classList.remove('light-mode');
+                            } else {
+                                document.documentElement.classList.add('light-mode');
+                                document.documentElement.classList.remove('dark-mode');
+                            }
+                            window.updateNavbar();
+                        }}
+                        disabled={false}
+                    />
+                );
+            };
+            
+            // Initialize Navbar
+            window.navbarRoot = ReactDOM.createRoot(document.getElementById('navbar-root'));
+            window.updateNavbar(null, "Upload image");
+            
+            // Listen for system theme changes
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+                const newTheme = e.matches ? 'dark' : 'light';
+                window.currentTheme = newTheme;
+                if (newTheme === 'dark') {
+                    document.documentElement.classList.add('dark-mode');
+                    document.documentElement.classList.remove('light-mode');
+                } else {
+                    document.documentElement.classList.add('light-mode');
+                    document.documentElement.classList.remove('dark-mode');
+                }
+                window.updateNavbar();
+            });
+            
+            // Create all React roots for unified controls
+            // Canvas section: Background control root (renders Control wrapping ratio + bg row + color/image)
+            window.sidebarRoots.backgroundControl = ReactDOM.createRoot(document.getElementById('backgroundControl-root'));
+            
+            // Global section: Material & Splicer control roots
+            window.sidebarRoots.materialControl = ReactDOM.createRoot(document.getElementById('materialControl-root'));
+            window.sidebarRoots.splicerControl = ReactDOM.createRoot(document.getElementById('splicerControl-root'));
+            
+            // Global section: Knob roots
+            window.sidebarRoots.canvasScale = ReactDOM.createRoot(document.getElementById('canvasScale-root'));
+            window.sidebarRoots.cellSize = ReactDOM.createRoot(document.getElementById('cellSize-root'));
+            window.sidebarRoots.cellSpread = ReactDOM.createRoot(document.getElementById('cellSpread-root'));
+            window.sidebarRoots.cellTumble = ReactDOM.createRoot(document.getElementById('cellTumble-root'));
+            
+            // Cells section: Cell control + knob roots
+            window.sidebarRoots.cellControl = ReactDOM.createRoot(document.getElementById('cellControl-root'));
+            window.sidebarRoots.cellCount = ReactDOM.createRoot(document.getElementById('cellCount-root'));
+            window.sidebarRoots.cellRadius = ReactDOM.createRoot(document.getElementById('cellRadius-root'));
+            window.sidebarRoots.chaos = ReactDOM.createRoot(document.getElementById('chaos-root'));
+            
+            // Cells section: Dimensions
+            window.sidebarRoots.cellWidth = ReactDOM.createRoot(document.getElementById('cellWidth-root'));
+            window.sidebarRoots.cellHeight = ReactDOM.createRoot(document.getElementById('cellHeight-root'));
+            window.sidebarRoots.lockAspectBtn = ReactDOM.createRoot(document.getElementById('lockAspectBtn-root'));
+            
+            // Export section
+            window.sidebarRoots.exportScale = ReactDOM.createRoot(document.getElementById('exportScale-root'));
+            window.sidebarRoots.exportBtn = ReactDOM.createRoot(document.getElementById('exportBtn-root'));
+            
+            // Cell detail panel (Panel 2)
+            window.sidebarRoots.cellDetailTitle = ReactDOM.createRoot(document.getElementById('cellDetail-sectionTitle-root'));
+            window.sidebarRoots.cellDetailVisibility = ReactDOM.createRoot(document.getElementById('cellDetail-visibility-root'));
+            window.sidebarRoots.cellDetailWidth = ReactDOM.createRoot(document.getElementById('cellDetail-width-root'));
+            window.sidebarRoots.cellDetailLock = ReactDOM.createRoot(document.getElementById('cellDetail-lock-root'));
+            window.sidebarRoots.cellDetailHeight = ReactDOM.createRoot(document.getElementById('cellDetail-height-root'));
+            window.sidebarRoots.cellDetailReset = ReactDOM.createRoot(document.getElementById('cellDetail-resetOverride-root'));
+            
+            // Divider roots
+            window.sidebarRoots.divider1 = ReactDOM.createRoot(document.getElementById('divider1-root'));
+            window.sidebarRoots.divider2 = ReactDOM.createRoot(document.getElementById('divider2-root'));
+            window.sidebarRoots.divider3 = ReactDOM.createRoot(document.getElementById('divider3-root'));
+            
+            // Render Dividers
+            window.sidebarRoots.divider1.render(<Divider spacing="sm" />);
+            window.sidebarRoots.divider2.render(<Divider spacing="sm" />);
+            window.sidebarRoots.divider3.render(<Divider spacing="sm" />);
+            
+            // Section Title roots
+            const canvasSection = document.getElementById('contentControls');
+            const globalSection = document.getElementById('globalControls');
+            const cellsSection = document.getElementById('cellControls');
+            const exportSection = document.getElementById('exportControls');
+            
+            window.sidebarRoots.sectionTitleCanvas = ReactDOM.createRoot(document.getElementById('sectionTitle-canvas-root'));
+            window.sidebarRoots.sectionTitleGlobal = ReactDOM.createRoot(document.getElementById('sectionTitle-global-root'));
+            window.sidebarRoots.sectionTitleCells = ReactDOM.createRoot(document.getElementById('sectionTitle-cells-root'));
+            window.sidebarRoots.sectionTitleExport = ReactDOM.createRoot(document.getElementById('sectionTitle-export-root'));
+            
+            window.sidebarRoots.sectionTitleCanvas.render(
+                <SectionTitle label="Canvas" defaultOpened={true} onToggle={(opened) => {
+                    canvasSection.classList.toggle('collapsed', !opened);
+                }} />
+            );
+            window.sidebarRoots.sectionTitleGlobal.render(
+                <SectionTitle label="Global" defaultOpened={true} onToggle={(opened) => {
+                    globalSection.classList.toggle('collapsed', !opened);
+                }} />
+            );
+            window.sidebarRoots.sectionTitleCells.render(
+                <SectionTitle label="Cells" defaultOpened={true} onToggle={(opened) => {
+                    cellsSection.classList.toggle('collapsed', !opened);
+                }} />
+            );
+            window.sidebarRoots.sectionTitleExport.render(
+                <SectionTitle label="Export" defaultOpened={true} onToggle={(opened) => {
+                    exportSection.classList.toggle('collapsed', !opened);
+                }} />
+            );
+            
+            // Initial render of all sidebar components
+            window.updateSidebarComponents(app);
+            
+            console.log('All React components initialized');
+
+            // Show grid crosshairs when hovering the Cell Count knob
+            const cellCountControl = document.getElementById('cellCount-root');
+            const gridContainer = document.getElementById('gridContainer');
+            if (cellCountControl && gridContainer) {
+                cellCountControl.addEventListener('mouseenter', () => {
+                    gridContainer.classList.add('show-crosshairs');
+                });
+                cellCountControl.addEventListener('mouseleave', () => {
+                    gridContainer.classList.remove('show-crosshairs');
+                });
+            }
+        });
+        
+        // Initialize home screen upload button
+        setTimeout(() => {
+            const uploadButtonRoot = document.getElementById('upload-button-root');
+            if (uploadButtonRoot && window.Button) {
+                const uploadRoot = ReactDOM.createRoot(uploadButtonRoot);
+                uploadRoot.render(
+                    React.createElement(window.Button, {
+                        size: 'large',
+                        label: 'Upload',
+                        iconBefore: React.createElement(ExportIcon),
+                        onClick: () => {
+                            document.getElementById('imageUploadCenter').click();
+                        }
+                    })
+                );
+            }
+            
+            // Make floating images clickable and draggable
+            const floatingImages = document.querySelectorAll('.floating-images-container .floating-image');
+            floatingImages.forEach((imageEl) => {
+                // Make clickable to load image
+                imageEl.addEventListener('click', (e) => {
+                    if (!imageEl.classList.contains('dragging')) {
+                        const imagePath = imageEl.getAttribute('data-image');
+                        if (window.appInstance) {
+                            window.appInstance.loadExampleImage({ target: { dataset: { image: imagePath } } });
+                        }
+                    }
+                });
+                
+                // Make draggable with interact.js
+                interact(imageEl).draggable({
+                    inertia: true,
+                    modifiers: [
+                        interact.modifiers.restrict({
+                            restriction: 'parent',
+                            endOnly: true
+                        })
+                    ],
+                    autoScroll: true,
+                    listeners: {
+                        start(event) {
+                            event.target.classList.add('dragging');
+                            event.target.style.animation = 'none';
+                        },
+                        move(event) {
+                            const target = event.target;
+                            const x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx;
+                            const y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;
+
+                            target.style.transform = `translate(${x}px, ${y}px)`;
+                            target.setAttribute('data-x', x);
+                            target.setAttribute('data-y', y);
+                        },
+                        end(event) {
+                            setTimeout(() => {
+                                event.target.classList.remove('dragging');
+                                // Keep animation disabled to maintain dragged position
+                                // event.target.style.animation = '';
+                            }, 200);
+                        }
+                    }
+                });
+            });
+        }, 400);
+    </script>
+    
+    <!-- Hidden file input for home screen upload -->
+    <input type="file" id="imageUploadCenter" accept="image/*" style="display: none;">
+
+    <script src="script.js?v=5"></script>
+</body>
+</html>

@@ -1,0 +1,197 @@
+/**
+ * Slider Component Styles
+ * Mapped from Figma Design System to CSS Variables
+ */
+
+.slider-component {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 30px;
+  padding: 0;
+  width: 100%;
+  max-width: 320px;
+}
+
+.slider-component.disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* Track container */
+.slider-track-container {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  min-width: 0;
+}
+
+/* Range input */
+.slider-input {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 4px;
+  background: var(--surface-below);
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+  position: relative;
+  padding: 1px;
+  
+  /* Bevel and inner shadows from Figma */
+  box-shadow: 
+    0px 1px 0px 0px var(--outer-bottom-light),
+    inset 1px 0px 1px 0px var(--inner-side-shadow),
+    inset -1px 0px 0px 0px var(--inner-side-shadow),
+    inset 0px 1px 1px 0px var(--inner-shadow);
+}
+
+.slider-input:disabled {
+  cursor: not-allowed;
+}
+
+/* Webkit (Chrome, Safari, Edge) thumb */
+.slider-input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 25px;
+  height: 16px;
+  background: var(--surface-above);
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  position: relative;
+  
+  /* Elevated shadow from Figma */
+  box-shadow: 
+    0px 4px 6px -2px rgba(0, 0, 0, 0.09),
+    0px 4px 4px -3px rgba(0, 0, 0, 0.1),
+    0px 6px 13px -1px rgba(0, 0, 0, 0.1),
+    inset 0px 1px 0px 0px var(--inner-top-light),
+    inset 0px -1px 0px 0px var(--inner-shadow);
+  
+  transition: transform 0.1s ease;
+}
+
+.slider-input::-webkit-slider-thumb:hover {
+  transform: translateY(-1px);
+}
+
+.slider-input::-webkit-slider-thumb:active {
+  transform: translateY(1px);
+}
+
+/* Firefox thumb */
+.slider-input::-moz-range-thumb {
+  width: 25px;
+  height: 16px;
+  background: var(--surface-above);
+  border-radius: var(--radius-full);
+  border: none;
+  cursor: pointer;
+  
+  /* Elevated shadow from Figma */
+  box-shadow: 
+    0px 4px 6px -2px rgba(0, 0, 0, 0.09),
+    0px 4px 4px -3px rgba(0, 0, 0, 0.1),
+    0px 6px 13px -1px rgba(0, 0, 0, 0.1),
+    inset 0px 1px 0px 0px var(--inner-top-light),
+    inset 0px -1px 0px 0px var(--inner-shadow);
+  
+  transition: transform 0.1s ease;
+}
+
+.slider-input::-moz-range-thumb:hover {
+  transform: translateY(-1px);
+}
+
+.slider-input::-moz-range-thumb:active {
+  transform: translateY(1px);
+}
+
+/* Firefox track */
+.slider-input::-moz-range-track {
+  background: transparent;
+  border: none;
+}
+
+/* TextField wrapper for slider */
+.slider-text-field-wrapper {
+  width: 56px;
+  flex-shrink: 0;
+  padding-right: var(--spacing-150);
+}
+
+.slider-text-field-wrapper .text-field-component {
+  display: flex;
+  width: 56px;
+}
+
+.slider-text-field-wrapper .text-field-container {
+  width: 56px;
+  min-width: 56px;
+}
+
+.slider-text-field-wrapper .text-field-inner {
+  flex: 1;
+  min-width: 0;
+}
+
+.slider-text-field-wrapper .text-field-input {
+  text-align: right;
+  min-width: 0;
+}
+
+/* Legacy value display (fallback if TextField not provided) */
+.slider-value-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-width: 56px;
+  height: 30px;
+  padding: 1px;
+  
+  /* Container background from Figma */
+  background: var(--surface-below);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  
+  /* Bevel and inner shadows */
+  box-shadow: 
+    0px 1px 0px 0px var(--outer-bottom-light),
+    inset 1px 0px 1px 0px var(--inner-side-shadow),
+    inset -1px 0px 0px 0px var(--inner-side-shadow),
+    inset 0px 1px 1px 0px var(--inner-shadow);
+}
+
+/* Value display - inner container */
+.slider-value-display {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: var(--spacing-150);
+  min-height: 0;
+  
+  /* Inner background */
+  background: var(--surface-above);
+  border-radius: var(--radius-sm);
+  
+  /* Typography */
+  font-family: 'Alpha Lyrae', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 16px;
+  color: var(--content-primary);
+  text-align: right;
+  text-shadow: 0px 1px 0px var(--outer-bottom-light);
+}
+
+/* Focus state for accessibility */
+.slider-input:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}

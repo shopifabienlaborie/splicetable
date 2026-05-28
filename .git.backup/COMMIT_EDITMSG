@@ -1,0 +1,18 @@
+Eliminate toDataURL bottleneck and overhaul interaction performance
+
+- Replace per-cell canvas.toDataURL() with CSS background-position for
+  both Fill and Fit modes, removing the #1 rendering bottleneck entirely
+- Switch scatter cell positioning from left/top (triggers Layout) to
+  CSS transform: translate() (compositor-only, GPU-accelerated)
+- Coalesce layout updates via requestAnimationFrame to prevent redundant
+  style passes from multiple pointermove events per frame
+- Add contain: strict and will-change: transform on grid/freestyle cells
+  for layout isolation and GPU layer promotion
+- Unify transform ownership: resize, drag, and knob updates all write
+  through _updateFreestyleCellStyles() via data-x/data-y offsets,
+  fixing the Radius vs Width/Height cross-reset bug
+- Move scheduleSidebarUpdate back into onChange to fix knob snap-back
+- Clear _freestyleCellsJustRebuilt in scheduleRender to prevent stale
+  full re-renders after Chaos changes
+
+Made-with: Cursor
