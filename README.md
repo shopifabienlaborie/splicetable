@@ -34,7 +34,7 @@ A visual tool for splitting images into customizable grid and scatter layouts. U
 
 ## Getting Started
 
-Splicetable is a static web app — no build step required. Just serve the files.
+Splicetable is a static web app. The compiled UI layer (`app-ui.js`) is committed to the repo, so **just serving the files works out of the box** — no build needed to run it. A build step is only required if you edit the UI source (`src/app-ui.jsx`); see [CONTRIBUTING.md](CONTRIBUTING.md#building-the-ui-layer).
 
 ### Local development
 
@@ -58,7 +58,11 @@ Host the files on any static hosting platform (Netlify, Vercel, GitHub Pages, et
 
 ```
 Splicetable/
-├── index.html              # Main app entry point (React components inline)
+├── index.html              # Main app entry point (loads precompiled app-ui.js)
+├── src/
+│   └── app-ui.jsx          # UI layer source (JSX) — edit this
+├── app-ui.js               # Precompiled UI layer (esbuild output, committed)
+├── package.json            # Build scripts (pnpm build) + esbuild devDep
 ├── script.js               # Core engine (ImageGridSplitter class)
 ├── style.css               # App-level styles
 ├── components/             # Design system components
@@ -84,11 +88,12 @@ Splicetable/
 
 ## Dependencies
 
-All loaded via CDN — no `npm install` needed:
+Runtime dependencies are loaded via CDN — no install needed to run the app:
 
-- [React 18](https://react.dev/) — UI components
-- [Babel Standalone](https://babeljs.io/) — In-browser JSX transformation
+- [React 18](https://react.dev/) — UI components (pinned to `@18`)
 - [interact.js](https://interactjs.io/) — Drag, resize, and gesture handling
+
+The JSX UI layer is **precompiled ahead of time** with [esbuild](https://esbuild.github.io/) (classic React runtime), so no in-browser transformer ships to production. esbuild is the only dev dependency (`pnpm install`); see [CONTRIBUTING.md](CONTRIBUTING.md#building-the-ui-layer).
 
 ## Font
 

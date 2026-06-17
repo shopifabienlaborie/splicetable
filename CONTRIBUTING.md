@@ -26,6 +26,22 @@ Feature requests are welcome! Please open an issue describing:
 6. Push to your fork
 7. Open a pull request
 
+## Building the UI layer
+
+The sidebar/navbar UI is written in JSX in `src/app-ui.jsx` and **precompiled** to `app-ui.js` (loaded by `index.html`). This avoids shipping an in-browser JSX transformer to production.
+
+If you edit `src/app-ui.jsx`, rebuild before committing:
+
+```bash
+pnpm install        # one-time: installs esbuild
+pnpm run build      # src/app-ui.jsx -> app-ui.js (minified, classic React runtime)
+pnpm run watch      # rebuild on save during development
+```
+
+Then bump the cache-buster on the script tag in `index.html` (e.g. `app-ui.js?v=2`) and commit both `src/app-ui.jsx` and the regenerated `app-ui.js`.
+
+> The compiled output uses the **classic** JSX runtime (`React.createElement`) and relies on the global `React`/`ReactDOM` loaded via CDN in `index.html`. Do not switch to the automatic runtime — it emits `import` statements that break in a classic `<script>`.
+
 ## Code Style
 - Follow existing code conventions in the project
 - Keep changes focused — one feature or fix per PR

@@ -1,0 +1,14 @@
+{
+  "name": "splicetable",
+  "version": "1.0.0",
+  "description": "Splicetable - Image Grid Splitter. Static site; UI layer precompiled from JSX.",
+  "private": true,
+  "scripts": {
+    "build": "esbuild src/app-ui.jsx --outfile=app-ui.js --jsx=transform --jsx-factory=React.createElement --jsx-fragment=React.Fragment --target=es2019 --minify --legal-comments=none",
+    "build:dev": "esbuild src/app-ui.jsx --outfile=app-ui.js --jsx=transform --jsx-factory=React.createElement --jsx-fragment=React.Fragment --target=es2019",
+    "watch": "esbuild src/app-ui.jsx --outfile=app-ui.js --jsx=transform --jsx-factory=React.createElement --jsx-fragment=React.Fragment --target=es2019 --watch"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.0"
+  }
+}
